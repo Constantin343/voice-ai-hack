@@ -132,6 +132,7 @@ export default function PostPage() {
 
   const handleSchedule = () => {
     console.log(`Scheduling post for ${activeNetwork}`)
+    router.push('/auth/twitter');
     setIsSharePopupOpen(false)
   }
 
