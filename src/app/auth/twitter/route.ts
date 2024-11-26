@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TwitterApi } from 'twitter-api-v2';
+import {createClient} from "@/utils/supabase/server";
 
 export async function GET(request: NextRequest) {
+    const supabase = await createClient()
+
     try {
         console.log('Starting GET handler for Twitter auth...');
 
@@ -19,6 +22,18 @@ export async function GET(request: NextRequest) {
             console.error('Missing one or more required environment variables.');
             return new NextResponse('Missing environment variables', { status: 500 });
         }
+
+        // Get user
+        console.log('Getting user from Supabase...');
+        const { data: { user }, error } = await supabase.auth.getUser();
+
+        if (error || !user) {
+            console.error('Failed to get user:', error);
+            return new NextResponse('Unauthorized', { status: 401 });
+        }
+
+        const user_id = user.id;
+        console.log('Authenticated user ID:', user_id);
 
         // Initialize Twitter API client
         console.log('Initializing Twitter API client...');
@@ -38,18 +53,26 @@ export async function GET(request: NextRequest) {
         console.log('Code Verifier:', codeVerifier);
         console.log('State:', state);
 
-        // Set the codeVerifier in a secure HTTP-only cookie
-        console.log('Setting cookies for code_verifier...');
-        const response = NextResponse.redirect(url);
-        response.cookies.set('code_verifier', codeVerifier, {
-            httpOnly: false,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none',
-            path: '/',
+        // Store codeVerifier in Supabase user_auth table
+        console.log('Storing code_verifier in Supabase user_auth table...');
+        const { data, error: upsertError } = await supabase.from('user_auth').upsert({
+            user_id: user_id,
+            twitter_verification_code: codeVerifier,
+            created_at: new Date().toISOString(),
+        }, {
+            onConflict: 'user_id',
         });
 
+        if (upsertError) {
+            console.error('Error storing code_verifier in Supabase:', upsertError);
+            return new NextResponse('Failed to store code_verifier', { status: 500 });
+        }
+
+        console.log('Successfully stored code_verifier in Supabase.');
+
         console.log('Redirecting to Twitter auth URL...');
-        return response;
+        return NextResponse.redirect(url);
+
     } catch (error) {
         console.error('Error generating Twitter auth URL:', error);
         return new NextResponse('Failed to generate Twitter auth URL', { status: 500 });

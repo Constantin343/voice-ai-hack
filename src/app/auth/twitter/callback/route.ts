@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TwitterApi } from 'twitter-api-v2';
+import {createClient} from "@/utils/supabase/server"; // Replace with the actual path to your Supabase client function
 
 export async function GET(request: NextRequest) {
+    const supabase = await createClient()
+
     try {
         console.log('Starting GET handler for Twitter callback...');
 
@@ -15,14 +18,33 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Missing authorization code' }, { status: 400 });
         }
 
-        // Retrieve the 'code_verifier' stored in cookies during the initial authorization request
-        const codeVerifier = request.cookies.get('code_verifier')?.value;
-        console.log('Code verifier retrieved from cookies:', codeVerifier);
+        // Retrieve the currently authenticated user
+        console.log('Retrieving currently authenticated user...');
+        const { data: { user }, error } = await supabase.auth.getUser();
 
-        if (!codeVerifier) {
-            console.warn('Missing code verifier in the request.');
-            return NextResponse.json({ error: 'Missing code verifier' }, { status: 400 });
+        if (error || !user) {
+            console.error('Failed to retrieve the authenticated user:', error);
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+
+        const userId = user.id;
+        console.log('Authenticated user ID:', userId);
+
+        // Fetch the code verifier from the database for the user
+        console.log('Fetching code_verifier from the database...');
+        const { data: userAuth, error: fetchError } = await supabase
+            .from('user_auth')
+            .select('twitter_verification_code')
+            .eq('user_id', userId)
+            .single();
+
+        if (fetchError || !userAuth?.twitter_verification_code) {
+            console.error('Failed to retrieve code_verifier from the database:', fetchError);
+            return NextResponse.json({ error: 'Code verifier not found' }, { status: 400 });
+        }
+
+        const codeVerifier = userAuth.twitter_verification_code;
+        console.log('Code verifier retrieved from database:', codeVerifier);
 
         // Validate required environment variables to ensure proper server configuration
         const clientId = process.env.TWITTER_CLIENT_ID;
@@ -59,32 +81,26 @@ export async function GET(request: NextRequest) {
         console.log('Refresh Token:', refreshToken);
         console.log('Expires In:', expiresIn);
 
-        // Prepare a response to redirect the user to the home page after successful authentication
-        const response = NextResponse.redirect(new URL('/', request.url));
-        console.log('Redirecting to home page with tokens set in cookies.');
+        // Store the tokens in the Supabase database
+        console.log('Storing tokens in the database...');
+        const { error: updateError } = await supabase
+            .from('user_auth')
+            .update({
+                twitter_access_token: accessToken,
+                created_at: new Date().toISOString(),
+            })
+            .eq('user_id', userId);
 
-        // Set the 'accessToken' in a secure HTTP-only cookie for session management
-        response.cookies.set('twitter_access_token', accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: expiresIn, // Set cookie expiration to match the token's lifetime
-            path: '/', // Make cookie accessible across the entire domain
-        });
-        console.log('Set access token in cookies.');
+        if (updateError) {
+            console.error('Error storing tokens in the database:', updateError);
+            return NextResponse.json({ error: 'Failed to store tokens' }, { status: 500 });
+        }
 
-        // Set the 'refreshToken' in a secure HTTP-only cookie for token renewal
-        response.cookies.set('twitter_refresh_token', refreshToken || '', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 2592000, // Set expiration to 30 days
-            path: '/',
-        });
-        console.log('Set refresh token in cookies.');
+        console.log('Tokens successfully stored in the database.');
 
-        // Return the response with cookies and redirect
-        return response;
+        // Redirect the user to the home page after successful authentication
+        console.log('Redirecting to home page...');
+        return NextResponse.redirect(new URL('/', request.url));
     } catch (error: any) {
         // Log the error details for debugging purposes
         console.error('Error during Twitter callback:', error);
