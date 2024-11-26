@@ -79,3 +79,17 @@ async function postToTwitter() {
         .then(() => console.log("Tweet successfully posted!"))
         .catch((error) => console.error("Failed to post tweet:", error));
 }
+
+export function generateCodeVerifierAndChallenge() {
+    const crypto = require('crypto');
+    const codeVerifier = crypto.randomBytes(32).toString('hex');
+    const codeChallenge = crypto
+        .createHash('sha256')
+        .update(codeVerifier)
+        .digest('base64')
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+
+    return { codeVerifier, codeChallenge };
+}

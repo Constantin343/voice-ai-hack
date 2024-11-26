@@ -132,14 +132,48 @@ export default function PostPage() {
 
   const handleSchedule = () => {
     console.log(`Scheduling post for ${activeNetwork}`)
+    if (activeNetwork === 'x') {
+      router.push('/auth/twitter');
+    } else {
+      router.push('/auth/linkedin');
+    }
     setIsSharePopupOpen(false)
   }
 
-  const handlePublish = () => {
-    console.log(`Publishing post to ${activeNetwork}`)
-    router.push('/auth/linkedin');
-    setIsSharePopupOpen(false)
-  }
+  const handlePublish = async () => {
+    if (!currentPost || !activeNetwork) return;
+
+    try {
+      if (activeNetwork === 'x') {
+        const response = await fetch('/api/platforms/twitter/post', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tweetContent: currentPost.x_description, // Using the X description from the current post
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to publish the post to X.');
+        }
+
+        const result = await response.json();
+        console.log('Successfully published to X:', result);
+        alert('Post successfully published to X!');
+      } else if (activeNetwork === 'linkedin') {
+        // Placeholder for LinkedIn publishing logic
+        console.log('Publishing to LinkedIn is not implemented yet.');
+      }
+    } catch (error) {
+      console.error('Error publishing to X:', error);
+      alert(`Failed to publish to X: ${(error as Error).message}`);
+    } finally {
+      setIsSharePopupOpen(false); // Close the share popup after the action
+    }
+  };
 
   const handleXDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (!currentPost) return;
