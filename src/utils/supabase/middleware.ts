@@ -34,12 +34,12 @@ export async function updateSession(request: NextRequest) {
     const {
         data: { user },
     } = await supabase.auth.getUser()
-    console.log('THIS IS THE User:\n-----------------------------------\n', user)
-    console.log('\n-----------------------------------\n')
-    console.log('THOSE ARE THE User identities:\n-----------------------------------\n', await supabase.auth.getUserIdentities())
-    console.log('\n-----------------------------------\n')
-    console.log('THis is the user session\n-----------------------------------\n', await supabase.auth.getSession())
-    console.log('\n-----------------------------------\n')
+    // console.log('THIS IS THE User:\n-----------------------------------\n', user)
+    // console.log('\n-----------------------------------\n')
+    // console.log('THOSE ARE THE User identities:\n-----------------------------------\n', await supabase.auth.getUserIdentities())
+    // console.log('\n-----------------------------------\n')
+    // console.log('THis is the user session\n-----------------------------------\n', await supabase.auth.getSession())
+    // console.log('\n-----------------------------------\n')
 
     if (
         !user &&
@@ -64,6 +64,7 @@ export async function updateSession(request: NextRequest) {
     //    return myNewResponse
     // If this is not done, you may be causing the browser and server to go out
     // of sync and terminate the user's session prematurely!
+    // Set your custom tokens
 
     return supabaseResponse
 }
