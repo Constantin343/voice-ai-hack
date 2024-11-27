@@ -11,11 +11,11 @@ import {
 interface SharePopupProps {
   isOpen: boolean
   onClose: () => void
-  onSchedule: () => void
+  authorizeTwitter: () => void
   onPublish: () => void
 }
 
-export function SharePopup({ isOpen, onClose, onSchedule, onPublish }: SharePopupProps) {
+export function SharePopup({ isOpen, onClose, authorizeTwitter, onPublish }: SharePopupProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -26,7 +26,7 @@ export function SharePopup({ isOpen, onClose, onSchedule, onPublish }: SharePopu
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col space-y-4 mt-4">
-          <Button onClick={onSchedule}>Schedule Post</Button>
+          <Button onClick={authorizeTwitter}>authorizeTwitter</Button>
           <Button onClick={onPublish}>Publish Now</Button>
         </div>
       </DialogContent>

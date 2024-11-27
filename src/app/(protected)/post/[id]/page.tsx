@@ -130,10 +130,10 @@ export default function PostPage() {
     setIsSharePopupOpen(true)
   }
 
-  const handleSchedule = () => {
+  const authorizeTwitter = () => {
     console.log(`Scheduling post for ${activeNetwork}`)
     if (activeNetwork === 'x') {
-      router.push('/auth/twitter');
+      router.push(`/auth/twitter?redirect=/post/params.id`);
     } else {
       router.push('/auth/linkedin');
     }
@@ -508,7 +508,7 @@ export default function PostPage() {
       <SharePopup
         isOpen={isSharePopupOpen}
         onClose={() => setIsSharePopupOpen(false)}
-        onSchedule={handleSchedule}
+        authorizeTwitter={authorizeTwitter}
         onPublish={handlePublish}
       />
     </div>

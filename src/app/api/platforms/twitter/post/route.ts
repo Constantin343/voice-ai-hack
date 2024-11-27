@@ -49,6 +49,8 @@ export async function POST(request: NextRequest) {
 
         // Step 3: Attempt to post the tweet using fetch
         try {
+            const body = JSON.stringify({ text: tweetContent });
+            console.log('Posting tweet with body:', body);
             const response = await fetch('https://api.twitter.com/2/tweets', {
                 method: 'POST',
                 headers: {
