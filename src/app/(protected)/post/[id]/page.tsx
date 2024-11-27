@@ -133,7 +133,8 @@ export default function PostPage() {
   const authorizeTwitter = () => {
     console.log(`Scheduling post for ${activeNetwork}`)
     if (activeNetwork === 'x') {
-      router.push(`/auth/twitter?redirect=/post/params.id`);
+      const redirect = `post/${params.id}`
+      router.push(`/auth/twitter?redirect=${encodeURIComponent(redirect)}`);
     } else {
       router.push('/auth/linkedin');
     }
