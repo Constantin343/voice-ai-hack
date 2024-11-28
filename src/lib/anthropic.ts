@@ -98,6 +98,7 @@ Using the same thoughts and some memory, extract the key points to shape the tho
 
 4. Write Twitter Post:
 - Write a Twitter post based on the title and content.
+- Twitter posts are limited to 280 characters!!
 - Depending on the context decide if a Twitter post is relevant. If it is, write a Twitter post based on the title and content.
 
 The content should be engaging, clear, and concise, suitable for a blog post or LinkedIn article.`;
