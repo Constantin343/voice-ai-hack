@@ -38,6 +38,7 @@ export default function PostPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
+  const [charCount, setCharCount] = useState(0)
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -52,6 +53,10 @@ export default function PostPage() {
         if (error) throw error
         
         if (data) {
+          if (data.x_description && data.x_description.length > 280) {
+            data.x_description = data.x_description.substring(0, 280)
+          }
+          setCharCount(data.x_description?.length || 0)
           setCurrentPost(data)
         } else {
           notFound()
@@ -185,9 +190,17 @@ export default function PostPage() {
 
   const handleXDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (!currentPost) return;
+    
+    const newText = e.target.value || ''
+    if (newText.length > 280) {
+      console.log("X posts are limited to 280 characters")
+      return
+    }
+    
+    setCharCount(newText.length)
     setCurrentPost({ 
       ...currentPost, 
-      x_description: e.target.value || '' // Fallback to empty string
+      x_description: newText
     });
   }
 
@@ -354,6 +367,9 @@ export default function PostPage() {
                       className="min-h-[200px] max-h-[200px] overflow-y-auto relative z-10 bg-white"
                       onSelect={handleTextSelection}
                     />
+                    <div className="absolute bottom-2 right-2 text-sm text-gray-500">
+                      {charCount}/280
+                    </div>
                     {selectedText && selectionStart !== null && selectionEnd !== null && (
                       <div 
                         className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none"
