@@ -8,6 +8,7 @@ import {notFound, useParams, useRouter} from "next/navigation"
 import Image from "next/image"
 import { SharePopup } from "@/components/share-popup"
 import type { Tables } from "@/lib/database.types"
+import { createClient } from "@/utils/supabase/client"
 
 
 const textareaStyles = {
@@ -41,11 +42,17 @@ export default function PostPage() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await fetch(`/api/db/read?id=${params.id}`)
-        const data = await response.json()
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('*')
+          .eq('id', params.id)
+          .single()
         
-        if (data.content_items && data.content_items[0]) {
-          setCurrentPost(data.content_items[0])
+        if (error) throw error
+        
+        if (data) {
+          setCurrentPost(data)
         } else {
           notFound()
         }
