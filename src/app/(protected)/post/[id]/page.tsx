@@ -8,6 +8,7 @@ import {notFound, useParams, useRouter} from "next/navigation"
 import Image from "next/image"
 import { SharePopup } from "@/components/share-popup"
 import type { Tables } from "@/lib/database.types"
+import { createClient } from "@/utils/supabase/client"
 
 
 const textareaStyles = {
@@ -37,15 +38,26 @@ export default function PostPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
+  const [charCount, setCharCount] = useState(0)
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await fetch(`/api/db/read?id=${params.id}`)
-        const data = await response.json()
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('content_items')
+          .select('*')
+          .eq('id', params.id)
+          .single()
         
-        if (data.content_items && data.content_items[0]) {
-          setCurrentPost(data.content_items[0])
+        if (error) throw error
+        
+        if (data) {
+          if (data.x_description && data.x_description.length > 280) {
+            data.x_description = data.x_description.substring(0, 280)
+          }
+          setCharCount(data.x_description?.length || 0)
+          setCurrentPost(data)
         } else {
           notFound()
         }
@@ -130,10 +142,11 @@ export default function PostPage() {
     setIsSharePopupOpen(true)
   }
 
-  const handleSchedule = () => {
+  const authorizeTwitter = () => {
     console.log(`Scheduling post for ${activeNetwork}`)
     if (activeNetwork === 'x') {
-      router.push('/auth/twitter');
+      const redirect = `post/${params.id}`
+      router.push(`/auth/twitter?redirect=${encodeURIComponent(redirect)}`);
     } else {
       router.push('/auth/linkedin');
     }
@@ -177,9 +190,17 @@ export default function PostPage() {
 
   const handleXDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (!currentPost) return;
+    
+    const newText = e.target.value || ''
+    if (newText.length > 280) {
+      console.log("X posts are limited to 280 characters")
+      return
+    }
+    
+    setCharCount(newText.length)
     setCurrentPost({ 
       ...currentPost, 
-      x_description: e.target.value || '' // Fallback to empty string
+      x_description: newText
     });
   }
 
@@ -346,6 +367,9 @@ export default function PostPage() {
                       className="min-h-[200px] max-h-[200px] overflow-y-auto relative z-10 bg-white"
                       onSelect={handleTextSelection}
                     />
+                    <div className="absolute bottom-2 right-2 text-sm text-gray-500">
+                      {charCount}/280
+                    </div>
                     {selectedText && selectionStart !== null && selectionEnd !== null && (
                       <div 
                         className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none"
@@ -508,7 +532,7 @@ export default function PostPage() {
       <SharePopup
         isOpen={isSharePopupOpen}
         onClose={() => setIsSharePopupOpen(false)}
-        onSchedule={handleSchedule}
+        authorizeTwitter={authorizeTwitter}
         onPublish={handlePublish}
       />
     </div>

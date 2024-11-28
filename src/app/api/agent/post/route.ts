@@ -8,6 +8,17 @@ export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
+  
+  // Get the current user from the session
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  if (userError || !user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   const apiKey = process.env.RETELL_API_KEY;
   
   if (!apiKey) {
@@ -70,7 +81,8 @@ export async function POST(req: NextRequest) {
         content_type: 'post',
         status: 'draft',
         linkedin_description: linkedin || null,
-        x_description: twitter || null
+        x_description: twitter || null,
+        user_id: user.id
       })
       .select()
       .single();
