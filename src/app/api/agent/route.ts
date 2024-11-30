@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Retell from 'retell-sdk';
 import { createClient } from "@/utils/supabase/server";
-
-const FREE_TIER_LIMIT = 10;
+import { checkUserSubscription } from "@/lib/subscription";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -28,16 +27,8 @@ export async function POST(req: NextRequest) {
 
   try {
     // Check subscription status and post count
-    const { data: subscription } = await supabase
-      .from('user_subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    const postCount = subscription?.post_count || 0;
-    const isSubscribed = subscription?.is_subscribed || false;
-
-    if (!isSubscribed && postCount >= FREE_TIER_LIMIT) {
+    const { canCreatePost, remainingPosts } = await checkUserSubscription(supabase, user.id);
+    if (!canCreatePost) {
       return NextResponse.json(
         { error: 'Free tier limit reached. Please upgrade to continue.' },
         { status: 403 }
@@ -48,8 +39,6 @@ export async function POST(req: NextRequest) {
       apiKey,
       fetch: fetch
     });
-
-    // TODO: check if current user still has remaining free tier / is subscribed
 
     const body = await req.json().catch(() => ({}));
     let agentId = 'agent_44d9118a49a822e22bfc1c2023';

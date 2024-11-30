@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { getPostTitleAndContent } from '@/lib/anthropic';
 import {createClient} from "@/utils/supabase/server";
 import { match_entries } from '@/lib/memory';
+import { incrementPostCount } from '@/lib/subscription';
 
 export const maxDuration = 30;
 
@@ -95,25 +96,7 @@ export async function POST(req: NextRequest) {
     console.log('Successfully stored content with ID:', data.id);
 
     // Update user's post count if they're not subscribed
-    const { data: subscription } = await supabase
-      .from('user_subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    const isSubscribed = subscription?.is_subscribed || false;
-    
-    if (!isSubscribed) {
-      const postCount = subscription?.post_count || 0;
-      await supabase
-        .from('user_subscriptions')
-        .upsert({
-          user_id: user.id,
-          post_count: postCount + 1
-        }, {
-          onConflict: 'user_id'
-        });
-    }
+    await incrementPostCount(supabase, user.id);
 
     return NextResponse.json({ 
       success: true,
