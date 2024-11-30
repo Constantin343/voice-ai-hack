@@ -94,6 +94,27 @@ export async function POST(req: NextRequest) {
 
     console.log('Successfully stored content with ID:', data.id);
 
+    // Update user's post count if they're not subscribed
+    const { data: subscription } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    const isSubscribed = subscription?.is_subscribed || false;
+    
+    if (!isSubscribed) {
+      const postCount = subscription?.post_count || 0;
+      await supabase
+        .from('user_subscriptions')
+        .upsert({
+          user_id: user.id,
+          post_count: postCount + 1
+        }, {
+          onConflict: 'user_id'
+        });
+    }
+
     return NextResponse.json({ 
       success: true,
       data: {
