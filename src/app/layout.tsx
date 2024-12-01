@@ -6,8 +6,8 @@ import { AgentProvider } from '@/contexts/AgentContext'
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Content Assistant",
-  description: "Your personal AI-powered content creation assistant. Create engaging content in seconds with personalized style and tone.",
+  title: "publyc",
+  description: "Build your personal brand and grow an audience as a founder. Capture your thoughts anywhere, go viral everywhere - in minutes.",
   keywords: ["AI", "content creation", "writing assistant", "AI writer", "content generator"],
   authors: [{ name: "Your Name" }],
   openGraph: {
