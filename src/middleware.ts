@@ -1,8 +1,12 @@
 import { updateSession } from './utils/supabase/middleware'
-import { authMiddleware } from './middleware/authMiddleware'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    // Skip middleware for the landing page
+    if (request.nextUrl.pathname === '/') {
+        return NextResponse.next()
+    }
+    
     return await updateSession(request)
 }
 

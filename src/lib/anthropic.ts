@@ -65,7 +65,9 @@ export async function getMainContentOfPost(thoughts: string) : Promise<any> {
 
 export async function getPostTitleAndContent(thoughts: string, memory: string): Promise<any> {
     const anthropic = new Anthropic({
-        apiKey: process.env["ANTHROPIC_API_KEY"]
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 30000
     });
 
     const systemPrompt = `
@@ -153,7 +155,15 @@ The content should be engaging, clear, and concise, suitable for a blog post or 
         });
         return (msg.content[0] as any).input;
     } catch (error) {
-        console.error("Error generating post title and content:", error);
-        throw error;
+        if (error instanceof Anthropic.APIConnectionTimeoutError) {
+            console.error("Timeout connecting to Anthropic API:", error);
+            throw new Error("Request timed out. Please try again.");
+        } else if (error instanceof Anthropic.APIConnectionError) {
+            console.error("Connection error with Anthropic API:", error);
+            throw new Error("Unable to connect to AI service. Please try again later.");
+        } else {
+            console.error("Unexpected error generating post title and content:", error);
+            throw new Error("An unexpected error occurred. Please try again.");
+        }
     }
 }
