@@ -39,7 +39,7 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="container mx-auto px-6 sm:px-8 md:px-12 py-6 flex justify-between items-center">
         <div className="text-2xl font-bold">publyc</div>
-        <Link href="/home">
+        <Link href="/login">
           <Button variant="outline">log in</Button>
         </Link>
       </nav>
