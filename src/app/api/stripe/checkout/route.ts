@@ -23,6 +23,11 @@ export async function POST() {
 
     const customer = await getStripeCustomer(user.email!, profile?.full_name)
 
+    // Determine base URL based on environment
+    const baseUrl = process.env.NODE_ENV === 'production'
+      ? process.env.NEXT_PUBLIC_BASE_URL
+      : 'http://localhost:3000'
+
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
       line_items: [
@@ -32,8 +37,8 @@ export async function POST() {
         },
       ],
       mode: 'subscription',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?canceled=true`,
+      success_url: `${baseUrl}/home?success=true`,
+      cancel_url: `${baseUrl}/home?canceled=true`,
       metadata: {
         userId: user.id,
       },
