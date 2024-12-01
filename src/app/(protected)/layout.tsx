@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/Sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
+import { Toaster } from 'sonner';
 
 export default function ProtectedLayout({
   children,
@@ -8,6 +9,7 @@ export default function ProtectedLayout({
 }>) {
   return (
     <div className="h-full relative">
+      <Toaster richColors position="top-center" />
       <div className="hidden lg:flex h-full w-64 flex-col fixed inset-y-0 z-50">
         <Sidebar />
       </div>
