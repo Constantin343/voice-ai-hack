@@ -1,14 +1,43 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Brain, Zap, Fingerprint, Mic, BarChart3 } from 'lucide-react'
 import Script from 'next/script'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
   const textRef = useRef<HTMLParagraphElement>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsLoggedIn(!!session)
+    }
+    
+    checkAuth()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setIsLoggedIn(false)
+    router.refresh()
+  }
+
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      router.push('/home')
+    } else {
+      router.push('/login')
+    }
+  }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -36,12 +65,16 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white text-black font-sans">
-      {/* Navigation */}
+      {/* Navigation - Updated */}
       <nav className="container mx-auto px-6 sm:px-8 md:px-12 py-6 flex justify-between items-center">
         <div className="text-2xl font-bold">publyc</div>
-        <Link href="/login">
-          <Button variant="outline">log in</Button>
-        </Link>
+        {isLoggedIn ? (
+          <Button variant="outline" onClick={handleLogout}>log out</Button>
+        ) : (
+          <Link href="/login">
+            <Button variant="outline">log in</Button>
+          </Link>
+        )}
       </nav>
 
       {/* Logo */}
@@ -63,11 +96,13 @@ export default function LandingPage() {
           <br />
           Capture your thoughts anywhere, go viral everywhere - in minutes.
         </p>
-        <Link href="/login">
-          <Button size="lg" className="bg-[#2d12e9] hover:bg-[#2d12e9]/90">
-            get started <ArrowRight className="ml-2" />
-          </Button>
-        </Link>
+        <Button 
+          size="lg" 
+          className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
+          onClick={handleGetStarted}
+        >
+          get started <ArrowRight className="ml-2" />
+        </Button>
         {/* <div className="mt-12 relative h-64 rounded-lg overflow-hidden">
           <Image 
             src="/placeholder.svg?height=256&width=768" 
@@ -220,11 +255,13 @@ export default function LandingPage() {
               </div>
             </div>
             
-            <Link href="/login">
-              <Button size="lg" className="w-full bg-[#2d12e9] hover:bg-[#2d12e9]/90">
-                get started for free
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              className="w-full bg-[#2d12e9] hover:bg-[#2d12e9]/90"
+              onClick={handleGetStarted}
+            >
+              get started for free
+            </Button>
           </div>
         </div>
       </section>
@@ -269,11 +306,13 @@ export default function LandingPage() {
             <br />
             Start growing your influence today.
           </p>
-          <Link href="/login">
-            <Button size="lg" className="bg-[#2d12e9] hover:bg-[#2d12e9]/90">
-              try publyc now <ArrowRight className="ml-2" />
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
+            onClick={handleGetStarted}
+          >
+            try publyc now <ArrowRight className="ml-2" />
+          </Button>
         </div>
       </section>
 

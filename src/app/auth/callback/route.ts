@@ -6,14 +6,14 @@ import { handleUserAgentConnection } from '@/utils/supabase/user-management'
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    // if "next" is in param, use it as the redirect URL
-    const next = searchParams.get('next') ?? '/'
-    console.log("I am logged in on the server side", request)
+    // Always redirect to /home after successful login
+    const next = '/home'
+    
     if (code) {
         const supabase = await createClient()
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+            const forwardedHost = request.headers.get('x-forwarded-host')
             
             const { data: { user } } = await supabase.auth.getUser()
             
@@ -22,13 +22,11 @@ export async function GET(request: Request) {
                     await handleUserAgentConnection(supabase, user.id)
                 } catch (error) {
                     console.error('Error in user creation:', error)
-                    // You might want to handle this error differently
                 }
             }
  
             const isLocalEnv = process.env.NODE_ENV === 'development'
             if (isLocalEnv) {
-                // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
                 return NextResponse.redirect(`${origin}${next}`)
             } else if (forwardedHost) {
                 return NextResponse.redirect(`https://${forwardedHost}${next}`)
@@ -38,6 +36,5 @@ export async function GET(request: Request) {
         }
     }
 
-    // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
