@@ -1,5 +1,6 @@
 import { extractKnowledgeFromTranscript } from './anthropic';
 import { createClient } from '@/utils/supabase/server';
+import { generateEmbedding } from './embeddings';
 
 export async function updateKnowledgeBase(transcript: string, userId: string) {
     try {
@@ -9,6 +10,9 @@ export async function updateKnowledgeBase(transcript: string, userId: string) {
         console.log('Extracted knowledge points:', knowledgePoints);
         
         for (const point of knowledgePoints) {
+            // Generate embedding from title and content
+            const embedding = await generateEmbedding(`${point.title} ${point.content}`);
+            
             const { error } = await supabase
                 .from('entries')
                 .insert([{
@@ -16,7 +20,7 @@ export async function updateKnowledgeBase(transcript: string, userId: string) {
                     content: point.content,
                     category: point.category,
                     user_id: userId,
-                    embedding: '[]' // This will be updated by a trigger
+                    embedding: embedding
                 }]);
                 
             if (error) {

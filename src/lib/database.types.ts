@@ -26,6 +26,7 @@ export type Database = {
           tags: string[] | null
           thumbnail_url: string | null
           title: string
+          user_id: string
           x_description: string | null
         }
         Insert: {
@@ -44,6 +45,7 @@ export type Database = {
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
+          user_id: string
           x_description?: string | null
         }
         Update: {
@@ -62,6 +64,7 @@ export type Database = {
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
+          user_id?: string
           x_description?: string | null
         }
         Relationships: []
@@ -74,7 +77,7 @@ export type Database = {
           embedding: string
           id: number
           title: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           category: string
@@ -83,7 +86,7 @@ export type Database = {
           embedding: string
           id?: never
           title: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           category?: string
@@ -92,35 +95,124 @@ export type Database = {
           embedding?: string
           id?: never
           title?: string
-          user_id?: string
+          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "entries_user_id_fkey"
-            columns: ["user_id"]
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
+      }
+      personas: {
+        Row: {
+          audience: string | null
+          created_at: string
+          goals: string | null
+          id: string
+          introduction: string | null
+          style: string | null
+          uniqueness: string | null
+          updated_at: string
+          user_id: string
+          value_proposition: string | null
+        }
+        Insert: {
+          audience?: string | null
+          created_at?: string
+          goals?: string | null
+          id?: string
+          introduction?: string | null
+          style?: string | null
+          uniqueness?: string | null
+          updated_at?: string
+          user_id: string
+          value_proposition?: string | null
+        }
+        Update: {
+          audience?: string | null
+          created_at?: string
+          goals?: string | null
+          id?: string
+          introduction?: string | null
+          style?: string | null
+          uniqueness?: string | null
+          updated_at?: string
+          user_id?: string
+          value_proposition?: string | null
+        }
+        Relationships: []
       }
       user_agent: {
         Row: {
           agent_id: string
           created_at: string | null
-          user_id: string
           llm_id: string | null
+          user_id: string
         }
         Insert: {
           agent_id: string
           created_at?: string | null
-          user_id: string
           llm_id?: string | null
+          user_id: string
         }
         Update: {
           agent_id?: string
           created_at?: string | null
-          user_id?: string
           llm_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_auth: {
+        Row: {
+          created_at: string
+          linkedin_access_token: string | null
+          twitter_access_token: string | null
+          twitter_verification_code: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          linkedin_access_token?: string | null
+          twitter_access_token?: string | null
+          twitter_verification_code?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          linkedin_access_token?: string | null
+          twitter_access_token?: string | null
+          twitter_verification_code?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          created_at: string | null
+          is_subscribed: boolean | null
+          post_count: number | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          is_subscribed?: boolean | null
+          post_count?: number | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          is_subscribed?: boolean | null
+          post_count?: number | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -162,20 +254,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      match_entries: {
-        Args: {
-          query_embedding: string
-          match_threshold: number
-          match_count: number
-        }
-        Returns: {
-          id: number
-          title: string
-          content: string
-          category: string
-          similarity: number
-        }[]
-      }
+      match_entries:
+        | {
+            Args: {
+              query_embedding: string
+              match_threshold: number
+              match_count: number
+            }
+            Returns: {
+              id: number
+              title: string
+              content: string
+              category: string
+              similarity: number
+            }[]
+          }
+        | {
+            Args: {
+              query_embedding: string
+              match_threshold: number
+              match_count: number
+              p_user_id: string
+            }
+            Returns: {
+              id: number
+              title: string
+              content: string
+              category: string
+              similarity: number
+            }[]
+          }
     }
     Enums: {
       content_status: "draft" | "scheduled" | "published" | "archived"
