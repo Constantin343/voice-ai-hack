@@ -5,6 +5,8 @@ export async function updateKnowledgeBase(transcript: string, userId: string) {
     try {
         const supabase = await createClient();
         const knowledgePoints = await extractKnowledgeFromTranscript(transcript);
+
+        console.log('Extracted knowledge points:', knowledgePoints);
         
         for (const point of knowledgePoints) {
             const { error } = await supabase
