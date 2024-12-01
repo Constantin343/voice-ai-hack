@@ -126,14 +126,16 @@ export async function extractKnowledgeFromTranscript(transcript: string): Promis
         maxRetries: 2,
         timeout: 30000
     });
+    console.log('Extracting knowledge from transcript:', transcript);
 
     const systemPrompt = `
 You are an AI tasked with extracting valuable knowledge points from conversation transcripts. 
-Your goal is to identify distinct pieces of information that would be valuable to store in a knowledge base.
+Your goal is to identify distinct pieces of information that would be valuable to store in a knowledge base. Only extract knowledge that was mentioned by the user not the agent! Ignore the agent's thoughts and comments.
+The converation is always in the context of content creation, so you don't need to mention that in the knowledge points. The user usally wants to create a post on LinkedIn or Twitter which you should not mention in the knowledge points.
 
 For each knowledge point you identify:
 1. Create a clear, concise title
-2. Extract or summarize the relevant content
+2. Extract or summarize the relevant content concisely
 3. Categorize it appropriately (e.g., 'technical', 'business', 'process', 'client', etc.)
 
 Return the information as an array of knowledge items in JSON format.`;

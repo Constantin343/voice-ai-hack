@@ -25,6 +25,9 @@ export async function updateKnowledgeBase(transcript: string, userId: string) {
                 
             if (error) {
                 console.error('Error inserting knowledge point:', error);
+            } else {
+                console.log('Successfully inserted knowledge point:', point);
+                //TODO: Also update retell knowledge base
             }
         }
     } catch (error) {

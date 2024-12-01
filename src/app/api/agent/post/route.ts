@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     );
 
     console.log('Fetching relevant memories');
-    const relevantMemories = await match_entries(supabase, transcript);
+    const relevantMemories = await match_entries(supabase, transcript, user.id);
     const memoriesContext = relevantMemories
       .map((memory: { title: string; content: string }) => 
         `${memory.title}: ${memory.content}`
