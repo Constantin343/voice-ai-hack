@@ -12,7 +12,8 @@ type MemoryEntry = {
 
 export async function match_entries(
   supabase: Awaited<ReturnType<typeof createClient>>, 
-  query: string
+  query: string,
+  userId: string
 ): Promise<MemoryEntry[]> {
   try {
     const embedding = await generateEmbedding(query);
@@ -20,7 +21,8 @@ export async function match_entries(
     const { data, error } = await supabase.rpc('match_entries', {
       query_embedding: `[${embedding.toString()}]`,
       match_threshold: 0.7,
-      match_count: 5
+      match_count: 5,
+      p_user_id: userId
     });
 
     if (error) {
