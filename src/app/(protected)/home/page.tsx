@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useAgent } from "@/contexts/AgentContext";
 import { createClient } from "@/utils/supabase/client";
 import InfoIcon from "@/components/infobar";
@@ -8,9 +8,7 @@ import { AnimatedAgent } from "@/components/AnimatedAgent";
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
-export default function Home() {
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const { agentId, setAgentId } = useAgent();
+function SubscriptionStatus() {
   const searchParams = useSearchParams();
   
   useEffect(() => {
@@ -33,6 +31,13 @@ export default function Home() {
       });
     }
   }, [searchParams]);
+  
+  return null;
+}
+
+export default function Home() {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const { agentId, setAgentId } = useAgent();
 
   useEffect(() => {
     const fetchAgentId = async () => {
@@ -63,6 +68,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-black dark:text-[#FFFBF0]">
+      <Suspense fallback={null}>
+        <SubscriptionStatus />
+      </Suspense>
       <div className="relative h-screen flex flex-col items-center justify-between p-8 pb-20">
         <div className="flex-1 flex items-center justify-center w-full">
           <div 
