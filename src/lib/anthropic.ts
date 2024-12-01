@@ -132,6 +132,7 @@ export async function extractKnowledgeFromTranscript(transcript: string): Promis
 You are an AI tasked with extracting valuable knowledge points from conversation transcripts. 
 Your goal is to identify distinct pieces of information that would be valuable to store in a knowledge base. Only extract knowledge that was mentioned by the user not the agent! Ignore the agent's thoughts and comments.
 The converation is always in the context of content creation, so you don't need to mention that in the knowledge points. The user usally wants to create a post on LinkedIn or Twitter which you should not mention in the knowledge points.
+Aggregate similiar aspects into one knowledge point and only create distinct knowledge points if they are clearly different.
 
 For each knowledge point you identify:
 1. Create a clear, concise title
