@@ -167,3 +167,77 @@ The content should be engaging, clear, and concise, suitable for a blog post or 
         }
     }
 }
+
+export async function extractKnowledgeFromTranscript(transcript: string): Promise<any> {
+    const anthropic = new Anthropic({
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 30000
+    });
+
+    const systemPrompt = `
+You are an AI tasked with extracting valuable knowledge points from conversation transcripts. 
+Your goal is to identify distinct pieces of information that would be valuable to store in a knowledge base.
+
+For each knowledge point you identify:
+1. Create a clear, concise title
+2. Extract or summarize the relevant content
+3. Categorize it appropriately (e.g., 'technical', 'business', 'process', 'client', etc.)
+
+Return the information as an array of knowledge items in JSON format.`;
+
+    const prompt = `
+Please analyze this conversation transcript and extract key knowledge points:
+
+${transcript}
+
+Format each knowledge point as a JSON object with 'title', 'content', and 'category' fields.
+Focus on extracting factual, reusable information that would be valuable for future reference.`;
+
+    try {
+        const msg = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            system: systemPrompt,
+            tools: [{
+                "name": "extract_knowledge",
+                "description": "Extracts knowledge points from the transcript",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "knowledge_points": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Clear, concise title for the knowledge point"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "The extracted knowledge content"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "description": "Category of the knowledge point"
+                                    }
+                                },
+                                "required": ["title", "content", "category"]
+                            }
+                        }
+                    },
+                    "required": ["knowledge_points"]
+                }
+            }],
+            tool_choice: {"type": "tool", "name": "extract_knowledge"},
+            max_tokens: 1024,
+            temperature: 0.5,
+            messages: [{ role: "user", content: prompt }],
+        });
+        
+        return (msg.content[0] as any).input.knowledge_points;
+    } catch (error) {
+        console.error("Error extracting knowledge from transcript:", error);
+        throw error;
+    }
+}

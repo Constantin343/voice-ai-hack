@@ -3,6 +3,7 @@ import Retell from 'retell-sdk';
 import { getPostTitleAndContent } from '@/lib/anthropic';
 import {createClient} from "@/utils/supabase/server";
 import { match_entries } from '@/lib/memory';
+import { updateKnowledgeBase } from '@/lib/knowledge';
 
 export const maxDuration = 30;
 
@@ -59,6 +60,11 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Update this line to pass the user.id
+    updateKnowledgeBase(transcript, user.id).catch(error => 
+      console.error('Error in background knowledge base update:', error)
+    );
 
     console.log('Fetching relevant memories');
     const relevantMemories = await match_entries(supabase, transcript);

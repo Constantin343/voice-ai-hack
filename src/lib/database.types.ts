@@ -74,6 +74,7 @@ export type Database = {
           embedding: string
           id: number
           title: string
+          user_id: string
         }
         Insert: {
           category: string
@@ -82,6 +83,7 @@ export type Database = {
           embedding: string
           id?: never
           title: string
+          user_id: string
         }
         Update: {
           category?: string
@@ -90,8 +92,16 @@ export type Database = {
           embedding?: string
           id?: never
           title?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "entries_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       user_agent: {
         Row: {
