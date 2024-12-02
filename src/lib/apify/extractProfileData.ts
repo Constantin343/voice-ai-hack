@@ -55,11 +55,12 @@ const client = new ApifyClient({
     token: process.env.APIFY_API_KEY, // Replace with your environment variable or a key
 });
 
-async function extractProfileData(linkedinProfileUrl: string): Promise<PersonProfile | null> {
+export async function extractProfileData(linkedinProfileUrl: string): Promise<PersonProfile | null> {
     try {
-        // Prepare Actor input with the provided URL
+        const cookie = require('./cookie.json').cookie;
         const input = {
-            startUrls: [{ url: linkedinProfileUrl }],
+            urls: [linkedinProfileUrl],
+            cookie,
             minDelay: 15,
             maxDelay: 60,
             proxy: {
@@ -68,7 +69,7 @@ async function extractProfileData(linkedinProfileUrl: string): Promise<PersonPro
             },
             findContacts: false,
         };
-        const ACTOR_ID = process.env.APIFY_PROFILE_EXTRACTOR_ACTOR_ID
+        const ACTOR_ID = process.env.APIFY_PROFILE_EXTRACTOR_ACTOR_ID!
         // Run the Actor and wait for it to finish
         const run = await client.actor(ACTOR_ID).call(input);
 
