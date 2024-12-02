@@ -39,6 +39,9 @@ export async function POST() {
       mode: 'subscription',
       success_url: `${baseUrl}/home?success=true`,
       cancel_url: `${baseUrl}/home?canceled=true`,
+      discounts: [{
+        coupon: 'xgeg0AIG'
+      }],
       metadata: {
         userId: user.id,
       },
