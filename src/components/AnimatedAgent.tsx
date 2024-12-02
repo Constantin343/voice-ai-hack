@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2 } from "lucide-react"
 import { useAgent } from '@/contexts/AgentContext'
 import AnimatedLogo from './AnimatedLogo'
+import { UpgradeDialog } from './UpgradeDialog'
 
 interface AnimatedAgentProps {
   isSpeaking: boolean
@@ -21,6 +22,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   const [token, setToken] = useState('');
   const [callId, setCallId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
 
   // Get available audio devices
   useEffect(() => {
@@ -67,14 +69,20 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ agent_id: agentId }),
-          credentials: 'include', // Add this to ensure cookies are sent
+          credentials: 'include',
         });
+        
+        const data = await response.json();
+        
+        if (response.status === 403 && data.error?.includes('Free tier limit reached')) {
+          setShowUpgradeDialog(true);
+          return;
+        }
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data = await response.json();
         if (!data.accessToken) {
           throw new Error('No access token received');
         }
@@ -86,7 +94,6 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         }
       } catch (error) {
         console.error("Failed to fetch token:", error);
-        // Add user-friendly error handling here if needed
       }
     };
 
@@ -234,6 +241,10 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         </div>
       )}
       <AnimatedLogo isSpeaking={isSpeaking} />
+      <UpgradeDialog 
+        isOpen={showUpgradeDialog} 
+        onClose={() => setShowUpgradeDialog(false)} 
+      />
     </div>
   )
 }

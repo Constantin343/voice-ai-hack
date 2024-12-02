@@ -13,11 +13,13 @@ import {
 import {createClient} from "@/utils/supabase/client";
 import {useRouter} from "next/navigation";
 import {Button} from "@/components/ui/button";
-import {LogOut} from "lucide-react";
+import {LogOut, Settings} from "lucide-react";
 import {useMemo, useState, useEffect} from "react";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 export function UserProfile() {
   const router = useRouter();
+  const { setIsOpen } = useSidebar();
   const supabase = useMemo(() => {
     return createClient()
   }, []);
@@ -39,50 +41,59 @@ export function UserProfile() {
     if (error) {
       console.error('Error signing out:', error);
     } else {
-      router.push('/'); // Redirect to the home page after signing out
+      router.push('/');
     }
   };
 
-  return (
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-        <div className="flex flex-wrap items-center justify-between gap-y-2">
-          <div className="flex items-center gap-x-4">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={userData?.user_metadata?.picture || "/avatar-placeholder.jpg"} />
-              <AvatarFallback>
-                {userData?.user_metadata?.name
-                  ?.split(' ')
-                  .map((n: string) => n[0])
-                  .join('') || 'U'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">{userData?.user_metadata?.name || 'User'}</p>
-              <p className="text-xs text-muted-foreground">{userData?.user_metadata?.email || 'No email'}</p>
-            </div>
-          </div>
+  const handleProfileClick = () => {
+    setIsOpen(false);
+    router.push('/settings');
+  };
 
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign out
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  You will need to sign in again to access your account.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleSignOut}>Sign out</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+  return (
+    <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="flex flex-wrap items-center justify-between gap-y-2">
+        <div 
+          className="flex items-center gap-x-4 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={handleProfileClick}
+        >
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={userData?.user_metadata?.picture || "/avatar-placeholder.jpg"} />
+            <AvatarFallback>
+              {userData?.user_metadata?.name
+                ?.split(' ')
+                .map((n: string) => n[0])
+                .join('') || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">{userData?.user_metadata?.name || 'User'}</p>
+            <p className="text-xs text-muted-foreground">{userData?.user_metadata?.email || 'No email'}</p>
+          </div>
+          <Settings className="h-4 w-4 ml-2 text-muted-foreground" />
         </div>
+
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign out
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to sign out?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You will need to sign in again to access your account.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSignOut}>Sign out</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
+    </div>
   );
 }
