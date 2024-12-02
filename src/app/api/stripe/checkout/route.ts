@@ -14,14 +14,12 @@ export async function POST() {
       )
     }
 
-    // Get or create Stripe customer
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
+    console.log('checkout route')
 
-    const customer = await getStripeCustomer(user.email!, profile?.full_name)
+    // Get or create Stripe customer
+    const customer = await getStripeCustomer(user.id, user.email!)
+
+    console.log('customer', customer)
 
     // Determine base URL based on environment
     const baseUrl = process.env.NODE_ENV === 'production'
@@ -39,6 +37,9 @@ export async function POST() {
       mode: 'subscription',
       success_url: `${baseUrl}/home?success=true`,
       cancel_url: `${baseUrl}/home?canceled=true`,
+      discounts: [{
+        coupon: 'xgeg0AIG'
+      }],
       metadata: {
         userId: user.id,
       },
