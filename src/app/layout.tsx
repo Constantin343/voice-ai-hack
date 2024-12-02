@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AgentProvider } from '@/contexts/AgentContext'
+import { Analytics } from "@vercel/analytics/react"
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +30,7 @@ export default function RootLayout({
         <AgentProvider>
           {children}
         </AgentProvider>
+        <Analytics/>
       </body>
     </html>
   );

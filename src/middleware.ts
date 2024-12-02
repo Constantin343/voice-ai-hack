@@ -2,8 +2,15 @@ import { updateSession } from './utils/supabase/middleware'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-    // Skip middleware for the landing page
-    if (request.nextUrl.pathname === '/') {
+    // Public paths that should bypass authentication
+    const publicPaths = [
+        '/',
+        '/api/stripe/webhook',
+        '/api/stripe/test'
+    ]
+
+    // Check if the current path is in publicPaths
+    if (publicPaths.some(path => request.nextUrl.pathname === path)) {
         return NextResponse.next()
     }
     

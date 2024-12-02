@@ -1,18 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Retell from 'retell-sdk';
+import { createClient } from "@/utils/supabase/server";
+import { checkUserSubscription } from "@/lib/subscription";
 
 export async function POST(req: NextRequest) {
+  const supabase = await createClient()
   const apiKey = process.env.RETELL_API_KEY;
-  
+
   if (!apiKey) {
     console.error('RETELL_API_KEY is not defined in environment variables');
     return NextResponse.json(
-      { error: 'Server configuration error' },
-      { status: 500 }
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+  
+  // Get the current user
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  
+  if (userError || !user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
     );
   }
 
   try {
+    // Check subscription status and post count
+    const { canCreatePost, remainingPosts } = await checkUserSubscription(supabase, user.id);
+    if (!canCreatePost) {
+      return NextResponse.json(
+        { error: 'Free tier limit reached. Please upgrade to continue.' },
+        { status: 403 }
+      );
+    }
+
     const client = new Retell({
       apiKey,
       fetch: fetch

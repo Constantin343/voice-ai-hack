@@ -90,82 +90,54 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="container mx-auto py-20 text-center">
-        <h1 className="text-5xl font-bold mb-4 lowercase px-4 md:px-8">thought leadership that builds itself</h1>
-        <p className="text-xl mb-8 max-w-2xl mx-auto px-4 md:px-8">
-          Build your personal brand and grow an audience as a founder.
-          <br />
-          Capture your thoughts anywhere, go viral everywhere - in minutes.
-        </p>
-        <Button 
-          size="lg" 
-          className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
-          onClick={handleGetStarted}
-        >
-          get started <ArrowRight className="ml-2" />
-        </Button>
-        {/* <div className="mt-12 relative h-64 rounded-lg overflow-hidden">
-          <Image 
-            src="/placeholder.svg?height=256&width=768" 
-            alt="publyc interface mockup" 
-            layout="fill" 
-            objectFit="cover"
-            className="rounded-lg"
-          />
-        </div> */}
+        <div className="max-w-[1800px] mx-auto">
+          <h1 className="text-5xl font-bold mb-4 lowercase px-4 md:px-8">distribution that works while you build</h1>
+          <p className="text-xl mb-8 max-w-[1600px] mx-auto px-4 md:px-8">
+            publyc helps you to build your personal brand and grow an audience as a founder.
+            <br />
+            Capture your thoughts anywhere, go viral everywhere - in minutes.
+          </p>
+          <Button 
+            size="lg" 
+            className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
+            onClick={handleGetStarted}
+          >
+            get started <ArrowRight className="ml-2" />
+          </Button>
+        </div>
       </section>
 
       {/* Trust + Attention Section */}
       <section className="bg-[#2d12e9] text-white py-32 md:py-48 relative">
-        <div className="container mx-auto text-center flex flex-col justify-center min-h-[400px]">
+        <div className="container mx-auto text-center flex flex-col justify-center min-h-[400px] px-6 sm:px-8 md:px-12">
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold lowercase">
             trust + attention<br />is the new moat*
           </h2>
           <p 
             ref={textRef}
-            className="text-xl md:text-2xl transition-all duration-1000 transform opacity-0 translate-y-4 absolute bottom-12 left-1/2 -translate-x-1/2 w-full"
+            className="text-xl md:text-2xl transition-all duration-1000 transform opacity-0 translate-y-4 absolute bottom-12 left-1/2 -translate-x-1/2 w-full px-6 sm:px-8 md:px-12"
           >
             *and personal branding is the best way to achieve that.
           </p>
         </div>
       </section>
 
-      {/* Problem Section */}
-      <section className="bg-black text-white py-20">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-8 lowercase">building in silence kills growth</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-xl font-semibold mb-4 lowercase">need audience for growth</h3>
-              <p>Without an audience, your brilliant ideas remain unheard.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4 lowercase">content creation kills productivity</h3>
-              <p>Crafting engaging posts takes time away from building your product.</p>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold mb-4 lowercase">current solutions fall short</h3>
-              <p>Generic AI content or time-intensive manual creation - neither works.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Solution Pillars */}
       <section className="py-20">
-        <div className="container mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-12 lowercase">your second brain for effortless influence</h2>
+        <div className="container mx-auto text-center px-6 sm:px-8 md:px-12">
+          <h2 className="text-4xl font-bold mb-12 lowercase">create unique content to grow your business</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div>
+            <div className="px-4">
               <Brain size={48} className="mx-auto mb-4 text-[#2d12e9]" />
               <h3 className="text-xl font-semibold mb-4 lowercase">we help you get started</h3>
               <p>In-depth onboarding to gain brand clarity and create your content strategy.</p>
             </div>
-            <div>
+            <div className="px-4">
               <Zap size={48} className="mx-auto mb-4 text-[#2d12e9]" />
               <h3 className="text-xl font-semibold mb-4 lowercase">we remove all friction</h3>
               <p>Turn spontaneous thoughts into viral posts. Your second brain does the heavy lifting.</p>
             </div>
-            <div>
+            <div className="px-4">
               <Fingerprint size={48} className="mx-auto mb-4 text-[#2d12e9]" />
               <h3 className="text-xl font-semibold mb-4 lowercase">we amplify your depth</h3>
               <p>We learn from your patterns & insights. AI replicates your uniqueness at scale.</p>
@@ -176,20 +148,20 @@ export default function LandingPage() {
 
       {/* Social Proof */}
       <section className="bg-gray-100 py-20">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto text-center px-6 sm:px-12 md:px-10">
           <h2 className="text-4xl font-bold mb-12 lowercase">join forward-thinking builders</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow flex items-center">
               <Image src="/placeholder.svg?height=64&width=64" alt="Jane Doe" width={64} height={64} className="rounded-full mr-4" />
               <div>
-                <p className="mb-2">"publyc has revolutionized my content strategy. I'm reaching more people with less effort."</p>
+                <p className="mb-2">"publyc turned my random thoughts into successful posts. What used to take hours now happens automatically while I build my startup."</p>
                 <p className="font-semibold">- Marvin Smith, Tech Entrepreneur</p>
               </div>
             </div>
             <div className="bg-white p-6 rounded-lg shadow flex items-center">
               <Image src="/placeholder.svg?height=64&width=64" alt="John Smith" width={64} height={64} className="rounded-full mr-4" />
               <div>
-                <p className="mb-2">"My audience growth has skyrocketed since I started using publyc. It's a game-changer."</p>
+                <p className="mb-2">"publyc keeps my authentic voice while scaling my presence. It's like having a content team that lives in my brain."</p>
                 <p className="font-semibold">- Lukas Meischer, VC Investor</p>
               </div>
             </div>
@@ -200,7 +172,12 @@ export default function LandingPage() {
       {/* How It Works */}
       <section className="py-12 md:py-20 lg:py-24">
         <div className="container mx-auto text-center px-4">
-          <h2 className="text-4xl font-bold lowercase mb-8 md:mb-12">how it works</h2>
+          <h2 className="text-4xl font-bold lowercase mb-8 md:mb-12">creation at the speed of thought</h2>
+          
+          <p className="text-xl max-w-3xl mx-auto mb-12">
+            publyc turns your daily insights into engaging LinkedIn & Twitter content that grows your audience organically. Using fine-tuned AI, proven frameworks from top creators, and a second brain that knows you and your goals, we help you build trust and influence while maintaining your unique voice.
+          </p>
+
           <div className="w-full max-w-[800px] mx-auto bg-white rounded-lg shadow-lg">
             <div className="relative pb-[56.25%] h-0">
               <iframe
@@ -217,9 +194,9 @@ export default function LandingPage() {
 
       {/* Pricing */}
       <section className="bg-gray-100 py-20">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto text-center px-6 sm:px-8 md:px-12">
           <h2 className="text-4xl font-bold mb-12 lowercase">start free, upgrade later</h2>
-          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-sm mx-auto">
             <div className="mb-8">
               <h3 className="text-2xl font-bold mb-4 lowercase">try it for free</h3>
               <p className="mb-6">Start with our free plan and upgrade when you're ready.</p>
@@ -239,7 +216,7 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-bold mb-2 lowercase">after your trial</h3>
                 <div className="mb-6">
                   <p className="text-4xl font-bold">€5<span className="text-lg">/month</span> <span className="text-lg line-through text-gray-400">€20</span></p>
-                  <p className="text-sm text-gray-600">early bird pricing - limited time</p>
+                  <p className="text-sm text-gray-600">early beta phase pricing - limited time</p>
                 </div>
                 <ul className="text-left space-y-2 mb-8">
                   <li className="flex items-center">
@@ -268,7 +245,7 @@ export default function LandingPage() {
 
       {/* Founders Section */}
       <section className="py-20 bg-black text-white">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto text-center px-6 sm:px-8 md:px-12">
           <h2 className="text-4xl font-bold mb-8 lowercase">from founders for founders</h2>
           <div className="flex flex-col md:flex-row items-center justify-center gap-8">
             <Image 
@@ -278,13 +255,13 @@ export default function LandingPage() {
               height={300} 
               className="rounded-lg object-cover"
             />
-            <div className="max-w-md text-left">
+            <div className="max-w-md text-left px-4 md:px-0">
               <h3 className="text-2xl font-semibold mb-4 lowercase">we are building publyc in public</h3>
               <p className="mb-4">
                 As founders ourselves, we understand the challenges of building a personal brand while focusing on product development. That's why we created publyc - to solve our own problem and help other founders like us.
               </p>
               <p>
-                We're using publyc to build publyc, experiencing firsthand the power of turning our insights into engaging content. Join us on this journey of growth and innovation.
+                We're using publyc to build in public, experiencing firsthand the power of turning our insights into engaging content. Join us on this journey of growth and innovation.
               </p>
               <br />
               <p>
@@ -293,6 +270,54 @@ export default function LandingPage() {
                 <Link href="https://www.linkedin.com/in/leon-sandner/" className="hover:text-[#2d12e9] underline" target="_blank" rel="noopener noreferrer">Leon</Link>
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Logo Grid */}
+        <div className="container mx-auto mt-16 px-6 sm:px-8 md:px-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-center justify-items-center max-w-3xl mx-auto">
+            <Image
+              src="/images/logos/cdtm.svg"
+              alt="CDTM"
+              width={150} 
+              height={75}
+              className="w-40 h-20 object-contain filter brightness-0 invert"
+            />
+            <Image
+              src="/images/logos/stanford.svg"
+              alt="Stanford"
+              width={150}
+              height={75} 
+              className="w-40 h-20 object-contain filter brightness-0 invert"
+            />
+            <Image
+              src="/images/logos/eth.svg"
+              alt="ETH"
+              width={150}
+              height={75}
+              className="w-40 h-20 object-contain filter brightness-0 invert"
+            />
+            <Image
+              src="/images/logos/cambridge.svg"
+              alt="Cambridge"
+              width={150}
+              height={75}
+              className="w-40 h-20 object-contain filter brightness-0 invert"
+            />
+            <Image
+              src="/images/logos/tum.svg"
+              alt="TUM"
+              width={150}
+              height={75}
+              className="w-40 h-20 object-contain filter brightness-0 invert"
+            />
+            <Image
+              src="/images/logos/tumai.svg"
+              alt="TUM.ai"
+              width={150}
+              height={75}
+              className="w-40 h-20 object-contain filter brightness-0 invert"
+            />
           </div>
         </div>
       </section>

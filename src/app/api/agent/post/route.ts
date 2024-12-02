@@ -3,6 +3,8 @@ import Retell from 'retell-sdk';
 import { getPostTitleAndContent } from '@/lib/anthropic';
 import {createClient} from "@/utils/supabase/server";
 import { match_entries } from '@/lib/memory';
+import { updateKnowledgeBase } from '@/lib/knowledge';
+import { incrementPostCount } from '@/lib/subscription';
 
 export const maxDuration = 30;
 
@@ -60,8 +62,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Update this line to pass the user.id
+    updateKnowledgeBase(transcript, user.id).catch(error => 
+      console.error('Error in background knowledge base update:', error)
+    );
+
     console.log('Fetching relevant memories');
-    const relevantMemories = await match_entries(supabase, transcript);
+    const relevantMemories = await match_entries(supabase, transcript, user.id);
     const memoriesContext = relevantMemories
       .map((memory: { title: string; content: string }) => 
         `${memory.title}: ${memory.content}`
@@ -93,6 +100,9 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('Successfully stored content with ID:', data.id);
+
+    // Update user's post count if they're not subscribed
+    await incrementPostCount(supabase, user.id);
 
     return NextResponse.json({ 
       success: true,
