@@ -291,7 +291,7 @@ export default function LandingPage() {
               className="w-40 h-20 object-contain filter brightness-0 invert"
             />
             <Image
-              src="/images/logos/ETH.svg"
+              src="/images/logos/eth.svg"
               alt="ETH"
               width={150}
               height={75}
