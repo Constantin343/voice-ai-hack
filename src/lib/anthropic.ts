@@ -15,54 +15,6 @@ export default async function request_Anthropic(prompt: string) : Promise<any> {
 
 }
 
-export async function getTitleOfPost(thoughts: string) : Promise<any> {
-    return await request_Anthropic(`
-    You are a writer for a blog and are trying to come up with a title for a new post. Here are the thoughts you have so far:
-    ${thoughts}
-    Create a succinct, engaging and very short title for the post. Here are a few tips:
-    \t•\tClarity is Key: Avoid vague or overly abstract titles. Your audience should immediately understand what the article is about.
-\t•\tMake It Intriguing: Use power words or pose a question that resonates with your audience.
-\t•\tKeep it Concise: Aim for a title that’s no longer than 10-12 words, and make the most important words appear early.
-\t•\tTarget Your Audience: Tailor the language and tone of the title to the software development community.
-    
-    Example titles: 
-    "Winning the Supabase and YC Hackathon"
-    "The Future of AI in Content Creation"
-    
-    Now use this information to craft a title for the post based on the provided thoughts.
-    Title:`);
-}
-
-export async function getMainContentOfPost(thoughts: string) : Promise<any> {
-    return await request_Anthropic(`You are a writer brainstorming a new post for a blog. Based on the thoughts provided:
-        ${thoughts}
-    Extract the key points that will shape the article. Use the bullet points below to guide your extraction and create a clear structure:
-
-        - **Main Topic or Focus**:
-            - What is the primary subject or theme of the post?
-            - What problem, idea, or trend is being explored?
-
-        - **Target Audience**:
-            - Who is the article for?
-            - What is the audience's familiarity with the topic?  
-
-    - **Key Arguments or Ideas**:
-        - What are the central points or arguments to convey?
-        - Why is this topic significant or relevant?
-
-    - **Supporting Details**:
-        - What examples, data, or anecdotes will support the ideas?
-        - Are there any tools, methods, or frameworks to include?
-
-    - **Takeaways or Actionable Insights**:
-        - What should the reader learn, do, or feel after reading?
-        - Are there any specific tips, steps, or recommendations to share?
-
-        Use this extracted information to refine and outline the post, ensuring each point contributes to a clear and engaging article.
-        KEY POINTS:
-    `);
-}
-
 export async function getPostTitleAndContent(thoughts: string, memory: string): Promise<any> {
     const anthropic = new Anthropic({
         apiKey: process.env["ANTHROPIC_API_KEY"],
@@ -165,5 +117,82 @@ The content should be engaging, clear, and concise, suitable for a blog post or 
             console.error("Unexpected error generating post title and content:", error);
             throw new Error("An unexpected error occurred. Please try again.");
         }
+    }
+}
+
+export async function extractKnowledgeFromTranscript(transcript: string): Promise<any> {
+    const anthropic = new Anthropic({
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 30000
+    });
+    console.log('Extracting knowledge from transcript:', transcript);
+
+    const systemPrompt = `
+You are an AI tasked with extracting valuable knowledge points from conversation transcripts. 
+Your goal is to identify distinct pieces of information that would be valuable to store in a knowledge base. Only extract knowledge that was mentioned by the user not the agent! Ignore the agent's thoughts and comments.
+The converation is always in the context of content creation, so you don't need to mention that in the knowledge points. The user usally wants to create a post on LinkedIn or Twitter which you should not mention in the knowledge points.
+Aggregate similiar aspects into one knowledge point and only create distinct knowledge points if they are clearly different.
+
+For each knowledge point you identify:
+1. Create a clear, concise title
+2. Extract or summarize the relevant content concisely
+3. Categorize it appropriately (e.g., 'technical', 'business', 'process', 'client', etc.)
+
+Return the information as an array of knowledge items in JSON format.`;
+
+    const prompt = `
+Please analyze this conversation transcript and extract key knowledge points:
+
+${transcript}
+
+Format each knowledge point as a JSON object with 'title', 'content', and 'category' fields.
+Focus on extracting factual, reusable information that would be valuable for future reference.`;
+
+    try {
+        const msg = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            system: systemPrompt,
+            tools: [{
+                "name": "extract_knowledge",
+                "description": "Extracts knowledge points from the transcript",
+                "input_schema": {
+                    "type": "object",
+                    "properties": {
+                        "knowledge_points": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "description": "Clear, concise title for the knowledge point"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "description": "The extracted knowledge content"
+                                    },
+                                    "category": {
+                                        "type": "string",
+                                        "description": "Category of the knowledge point"
+                                    }
+                                },
+                                "required": ["title", "content", "category"]
+                            }
+                        }
+                    },
+                    "required": ["knowledge_points"]
+                }
+            }],
+            tool_choice: {"type": "tool", "name": "extract_knowledge"},
+            max_tokens: 1024,
+            temperature: 0.5,
+            messages: [{ role: "user", content: prompt }],
+        });
+        
+        return (msg.content[0] as any).input.knowledge_points;
+    } catch (error) {
+        console.error("Error extracting knowledge from transcript:", error);
+        throw error;
     }
 }
