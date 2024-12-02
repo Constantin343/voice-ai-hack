@@ -38,7 +38,7 @@ export async function POST() {
       success_url: `${baseUrl}/home?success=true`,
       cancel_url: `${baseUrl}/home?canceled=true`,
       discounts: [{
-        coupon: 'xgeg0AIG'
+        coupon: process.env.STRIPE_COUPON_ID
       }],
       metadata: {
         userId: user.id,
