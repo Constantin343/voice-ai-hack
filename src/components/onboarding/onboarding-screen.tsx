@@ -29,6 +29,8 @@ export default function OnboardingScreen() {
     };
 
     const screens = [
+        <DataProcessingScreen onNext={goToNextStep}/>,
+
         <RequestLinkedinScreen onLinkedInSubmit={handleLinkedInScraping} onNext={goToNextStep}/>,
         <IntroVideoScreen onNext={goToNextStep}/>,
         <DataProcessingScreen onNext={goToNextStep}/>,
