@@ -9,6 +9,7 @@ import { useAgent } from '@/contexts/AgentContext'
 import AnimatedLogo from './AnimatedLogo'
 import { UpgradeDialog } from './UpgradeDialog'
 import { FreeTrialWarningDialog } from './FreeTrialWarningDialog'
+import { toast } from 'sonner'
 
 interface AnimatedAgentProps {
   isSpeaking: boolean
@@ -91,10 +92,6 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
           }
         }
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
         if (!data.accessToken) {
           throw new Error('No access token received');
         }
@@ -113,32 +110,12 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     if (isSpeaking) {
       fetchToken();
     }
-  }, [isSpeaking, agentId, hasSeenWarning]);
+  }, [isSpeaking, agentId]);
 
   // Add handler for warning dialog close
   const handleWarningClose = async () => {
     setShowWarningDialog(false);
     setHasSeenWarning(true);
-    
-    // If the user closes the warning, start the call
-    if (isSpeaking) {
-      const response = await fetch('/api/agent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ agent_id: agentId }),
-        credentials: 'include',
-      });
-      
-      const data = await response.json();
-      if (data.accessToken) {
-        setToken(data.accessToken);
-        if (data.callId) {
-          setCallId(data.callId);
-        }
-      }
-    }
   };
 
   useEffect(() => {
@@ -147,7 +124,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     const setupRetellCall = async () => {
       try {
         if (!token) {
-          throw new Error('No access token available');
+          return;
         }
 
         if (!retellClientRef.current) {
@@ -203,7 +180,9 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
 
       } catch (error) {
         console.error("Failed to setup Retell call:", error);
-        // Reset the speaking state or show error to user
+        toast.error('Connection failed', {
+          description: 'Unable to establish call connection. Please try again.',
+        });
       }
     };
 
