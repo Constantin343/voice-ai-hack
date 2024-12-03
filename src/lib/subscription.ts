@@ -13,6 +13,8 @@ export async function checkUserSubscription(supabase: SupabaseClient, userId: st
   const isSubscribed = subscription?.is_subscribed || false;
   const canCreatePost = isSubscribed || postCount < FREE_TIER_LIMIT;
 
+  console.log('postCount', postCount);
+
   return {
     postCount,
     isSubscribed,

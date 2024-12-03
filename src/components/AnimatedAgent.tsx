@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 import { useAgent } from '@/contexts/AgentContext'
 import AnimatedLogo from './AnimatedLogo'
 import { UpgradeDialog } from './UpgradeDialog'
+import { FreeTrialWarningDialog } from './FreeTrialWarningDialog'
 
 interface AnimatedAgentProps {
   isSpeaking: boolean
@@ -23,6 +24,9 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   const [callId, setCallId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [remainingPosts, setRemainingPosts] = useState(10);
+  const [hasSeenWarning, setHasSeenWarning] = useState(false);
 
   // Get available audio devices
   useEffect(() => {
@@ -59,7 +63,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     getAudioDevices();
   }, []);
 
-  // Update the token fetch with better error handling
+  // Update the token fetch useEffect
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -74,9 +78,17 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         
         const data = await response.json();
         
-        if (response.status === 403 && data.error?.includes('Free tier limit reached')) {
-          setShowUpgradeDialog(true);
-          return;
+        if (response.status === 403) {
+          if (data.error?.includes('Free tier limit reached')) {
+            setShowUpgradeDialog(true);
+            return null; // Return null to prevent call setup
+          }
+          if (data.warning?.includes('Free tier limit approaching') && !hasSeenWarning) {
+            setRemainingPosts(data.remainingPosts);
+            setShowWarningDialog(true);
+            setToken(''); // Don't set the token yet
+            return null; // Return null to prevent call setup
+          }
         }
         
         if (!response.ok) {
@@ -94,13 +106,40 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         }
       } catch (error) {
         console.error("Failed to fetch token:", error);
+        return null;
       }
     };
 
     if (isSpeaking) {
       fetchToken();
     }
-  }, [isSpeaking, agentId]);
+  }, [isSpeaking, agentId, hasSeenWarning]);
+
+  // Add handler for warning dialog close
+  const handleWarningClose = async () => {
+    setShowWarningDialog(false);
+    setHasSeenWarning(true);
+    
+    // If the user closes the warning, start the call
+    if (isSpeaking) {
+      const response = await fetch('/api/agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ agent_id: agentId }),
+        credentials: 'include',
+      });
+      
+      const data = await response.json();
+      if (data.accessToken) {
+        setToken(data.accessToken);
+        if (data.callId) {
+          setCallId(data.callId);
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -244,6 +283,11 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
       <UpgradeDialog 
         isOpen={showUpgradeDialog} 
         onClose={() => setShowUpgradeDialog(false)} 
+      />
+      <FreeTrialWarningDialog 
+        isOpen={showWarningDialog}
+        onClose={handleWarningClose}
+        remainingPosts={remainingPosts}
       />
     </div>
   )
