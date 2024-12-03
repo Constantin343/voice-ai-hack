@@ -275,7 +275,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   return (
     <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
       {isProcessing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full z-10">
+        <div className="absolute inset-0 flex items-center justify-center rounded-full z-10">
           <Loader2 className="h-8 w-8 animate-spin text-white" />
         </div>
       )}
