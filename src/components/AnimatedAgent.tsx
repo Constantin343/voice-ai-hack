@@ -8,6 +8,8 @@ import { Loader2 } from "lucide-react"
 import { useAgent } from '@/contexts/AgentContext'
 import AnimatedLogo from './AnimatedLogo'
 import { UpgradeDialog } from './UpgradeDialog'
+import { FreeTrialWarningDialog } from './FreeTrialWarningDialog'
+import { toast } from 'sonner'
 
 interface AnimatedAgentProps {
   isSpeaking: boolean
@@ -23,6 +25,9 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   const [callId, setCallId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  const [remainingPosts, setRemainingPosts] = useState(10);
+  const [hasSeenWarning, setHasSeenWarning] = useState(false);
 
   // Get available audio devices
   useEffect(() => {
@@ -59,7 +64,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     getAudioDevices();
   }, []);
 
-  // Update the token fetch with better error handling
+  // Update the token fetch useEffect
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -74,13 +79,17 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         
         const data = await response.json();
         
-        if (response.status === 403 && data.error?.includes('Free tier limit reached')) {
-          setShowUpgradeDialog(true);
-          return;
-        }
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 403) {
+          if (data.error?.includes('Free tier limit reached')) {
+            setShowUpgradeDialog(true);
+            return null; // Return null to prevent call setup
+          }
+          if (data.warning?.includes('Free tier limit approaching') && !hasSeenWarning) {
+            setRemainingPosts(data.remainingPosts);
+            setShowWarningDialog(true);
+            setToken(''); // Don't set the token yet
+            return null; // Return null to prevent call setup
+          }
         }
         
         if (!data.accessToken) {
@@ -94,6 +103,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         }
       } catch (error) {
         console.error("Failed to fetch token:", error);
+        return null;
       }
     };
 
@@ -102,13 +112,19 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     }
   }, [isSpeaking, agentId]);
 
+  // Add handler for warning dialog close
+  const handleWarningClose = async () => {
+    setShowWarningDialog(false);
+    setHasSeenWarning(true);
+  };
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     const setupRetellCall = async () => {
       try {
         if (!token) {
-          throw new Error('No access token available');
+          return;
         }
 
         if (!retellClientRef.current) {
@@ -164,7 +180,9 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
 
       } catch (error) {
         console.error("Failed to setup Retell call:", error);
-        // Reset the speaking state or show error to user
+        toast.error('Connection failed', {
+          description: 'Unable to establish call connection. Please try again.',
+        });
       }
     };
 
@@ -236,7 +254,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   return (
     <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
       {isProcessing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full z-10">
+        <div className="absolute inset-0 flex items-center justify-center rounded-full z-10">
           <Loader2 className="h-8 w-8 animate-spin text-white" />
         </div>
       )}
@@ -244,6 +262,11 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
       <UpgradeDialog 
         isOpen={showUpgradeDialog} 
         onClose={() => setShowUpgradeDialog(false)} 
+      />
+      <FreeTrialWarningDialog 
+        isOpen={showWarningDialog}
+        onClose={handleWarningClose}
+        remainingPosts={remainingPosts}
       />
     </div>
   )
