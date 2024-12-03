@@ -1,20 +1,25 @@
+import { ArrowRight } from 'lucide-react';
+
 export default function IntroVideoScreen({ onNext }: { onNext: () => void }) {
     return (
-        <div className="flex flex-col items-center justify-center h-full">
-            <h1 className="text-3xl font-bold mb-8">Welcome to Our App</h1>
-            <iframe
-                src="https://player.vimeo.com/video/YOUR_VIDEO_ID"
-                width="640"
-                height="360"
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowFullScreen
-                className="rounded-lg shadow-lg"
-            ></iframe>
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+            <h1 className="text-3xl font-bold mb-4">welcome to publyc :)</h1>
+            <div className="h-[70vh] aspect-[9/16]">
+                <iframe
+                    src="https://player.vimeo.com/video/1035417977"
+                    width="100%"
+                    height="100%"
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+                    allowFullScreen
+                    className="rounded-lg shadow-lg"
+                    style={{ border: 'none' }}
+                ></iframe>
+            </div>
             <button
                 onClick={onNext}
-                className="mt-8 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="mt-8 bg-[#2d12e9] hover:bg-[#2d12e9]/90 text-white px-4 py-2 rounded"
             >
-                Next
+                Next <ArrowRight className="ml-2 inline" />
             </button>
         </div>
     );
