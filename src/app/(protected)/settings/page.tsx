@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Mail, Calendar } from 'lucide-react';
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -68,13 +68,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container max-w-2xl py-8">
-      <h1 className="text-3xl font-bold mb-8">Settings</h1>
+    <div className="container max-w-2xl py-8 px-4 sm:px-6 lg:px-8">
+      <h1 className="text-3xl font-bold mb-8 text-center sm:text-left">Settings</h1>
 
-      <Card className="mb-8">
+      <Card className="mb-8 mx-2 sm:mx-0">
         <CardHeader>
-          <CardTitle>Subscription</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">subscription</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
             Manage your subscription status
           </CardDescription>
         </CardHeader>
@@ -82,21 +82,54 @@ export default function SettingsPage() {
           {subscription?.is_subscribed ? (
             <>
               <div className="mb-4">
-                <p className="text-sm text-muted-foreground mb-1">Status</p>
-                <p className="font-medium capitalize">{subscription.subscription_status}</p>
+                <p className="text-sm sm:text-base text-muted-foreground mb-1">Status</p>
+                <p className="font-medium capitalize text-sm sm:text-base">{subscription.subscription_status}</p>
               </div>
-              <Button onClick={handleManageSubscription}>
+              <Button className="w-full sm:w-auto" onClick={handleManageSubscription}>
                 Manage Subscription
               </Button>
             </>
           ) : (
             <>
-              <p className="mb-4">You are currently on the free plan.</p>
-              <Button onClick={handleSubscribe}>
+              <p className="mb-4 text-sm sm:text-base">You are currently on the free plan.</p>
+              <Button className="w-full sm:w-auto" onClick={handleSubscribe}>
                 Upgrade to Premium
               </Button>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="mx-2 sm:mx-0 shadow-sm hover:shadow-md transition-shadow duration-200">
+        <CardHeader>
+          <CardTitle className="text-xl sm:text-2xl">contact us</CardTitle>
+          <CardDescription className="text-sm sm:text-base">
+            Your feedback is highly appreciated!
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Mail className="h-5 w-5 text-black" />
+            <a 
+              href="mailto:publyc@mail.com" 
+              className="text-sm sm:text-base hover:underline text-black"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              publyc@mail.com
+            </a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-black" />
+            <a 
+              href="https://booking.akiflow.com/publyc" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-sm sm:text-base hover:underline text-black"
+            >
+              Schedule a call with us
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

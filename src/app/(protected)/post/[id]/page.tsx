@@ -251,6 +251,13 @@ export default function PostPage() {
     setTimeout(() => setShowToast(false), 2000)
   }
 
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [currentPost?.x_description, currentPost?.linkedin_description, editMode]);
+
   if (loading) {
     return <div>Loading...</div>
   }
@@ -329,7 +336,7 @@ export default function PostPage() {
             </CardHeader>
             <CardContent>
               <div 
-                className="h-[200px] p-4 rounded-md border bg-white overflow-y-auto"
+                className="h-[400px] p-4 rounded-md border bg-white overflow-y-auto"
               >
                 {currentPost?.details || ''}
               </div>
@@ -347,7 +354,7 @@ export default function PostPage() {
                 placeholder="Enter instructions to regenerate the posts (e.g. 'Use more emojis' or 'Include this information: ...')"
                 value={regeneratePrompt}
                 onChange={(e) => setRegeneratePrompt(e.target.value)}
-                className="min-h-[100px]"
+                className="min-h-[180px]"
               />
               <Button className="mt-4 w-full" disabled={!regeneratePrompt}>
                 <RotateCcw className="mr-2 h-4 w-4" />
@@ -392,7 +399,8 @@ export default function PostPage() {
                         ref={textareaRef}
                         value={currentPost?.x_description || ''}
                         onChange={handleXDescriptionChange}
-                        className="min-h-[200px] max-h-[200px] overflow-y-auto relative z-10 bg-white"
+                        className="min-h-[100px] h-auto resize-none"
+                        style={{ height: textareaRef.current?.scrollHeight + 'px' }}
                         onSelect={handleTextSelection}
                       />
                       <div className="absolute bottom-2 right-2 text-sm text-gray-500">
@@ -453,11 +461,10 @@ export default function PostPage() {
                   </div>
                 ) : (
                   <div 
-                    className="h-[200px] p-4 rounded-md border bg-white overflow-y-auto"
-                    dangerouslySetInnerHTML={{ 
-                      __html: currentPost?.x_description || ''
-                    }}
-                  />
+                    className="min-h-[100px] h-auto p-4 rounded-md border bg-white whitespace-pre-wrap"
+                  >
+                    {currentPost?.x_description || ''}
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -497,7 +504,8 @@ export default function PostPage() {
                         ref={textareaRef}
                         value={currentPost?.linkedin_description || ''}
                         onChange={handleLinkedInDescriptionChange}
-                        className="min-h-[200px] max-h-[200px] overflow-y-auto relative z-10 bg-transparent"
+                        className="min-h-[100px] h-auto resize-none"
+                        style={{ height: textareaRef.current?.scrollHeight + 'px' }}
                         onSelect={handleTextSelection}
                       />
                       {selectedText && selectionStart !== null && selectionEnd !== null && (
@@ -553,11 +561,10 @@ export default function PostPage() {
                   </div>
                 ) : (
                   <div 
-                    className="h-[200px] p-4 rounded-md border bg-white overflow-y-auto"
-                    dangerouslySetInnerHTML={{ 
-                      __html: currentPost?.linkedin_description || ''
-                    }}
-                  />
+                    className="min-h-[100px] h-auto p-4 rounded-md border bg-white whitespace-pre-wrap"
+                  >
+                    {currentPost?.linkedin_description || ''}
+                  </div>
                 )}
               </CardContent>
             </Card>
