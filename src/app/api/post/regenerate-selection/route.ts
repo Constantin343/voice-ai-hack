@@ -81,7 +81,7 @@ YOUR RESPONSE SHOULD PRESERVE THE EXACT FORMATTING OF THE ORIGINAL TEXT.`;
             // Replace escaped newlines with actual newlines
             .replace(/\\n/g, '\n')
             // Clean up any whitespace while preserving intentional line breaks
-            .split('\n').map(line => line.trim()).join('\n');
+            .split('\n').map((line: string) => line.trim()).join('\n');
 
         // For X posts, ensure the regenerated text isn't longer than the original selection
         if (platform === 'x') {
