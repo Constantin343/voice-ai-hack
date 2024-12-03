@@ -62,8 +62,9 @@ export default function DataProcessingScreen({ onNext }: { onNext: () => void })
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-white">
+
             {!hasLinkedInURL ? (
-                // LinkedIn URL Input Section
+                // LinkedIn URL Input Section. Add text "We are using your linkedin account data to create your personalized AI -> next is see how it works"
                 <div className="text-center w-96 p-8 bg-white shadow-lg rounded-xl border border-gray-200">
                     <p className="text-lg font-medium text-gray-800 mb-4">
                         Enter your LinkedIn URL to get started:

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {extractProfileData} from "@/lib/apify/extractProfileData";
 import {createClient} from "@/utils/supabase/server";
+import {extractPostData} from "@/lib/apify/extractPostData";
 
 
 export async function POST(req: NextRequest) {
@@ -26,9 +27,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
         }
 
+        const postData = await extractPostData(linkedinProfile);
+        if (!postData) {
+            return NextResponse.json({ error: 'Failed to scrape LinkedIn post data' }, { status: 500 });
+        }
+
         // Extract profile data
         const profileData = await extractProfileData(linkedinProfile);
-
         if (!profileData) {
             return NextResponse.json({ error: 'Failed to scrape LinkedIn profile data' }, { status: 500 });
         }
@@ -39,6 +44,7 @@ export async function POST(req: NextRequest) {
             .upsert({
                 user_id: user.id,
                 scraped_profile: profileData,
+                scraped_posts: postData,
             }, {
                 onConflict: 'user_id',
             });
