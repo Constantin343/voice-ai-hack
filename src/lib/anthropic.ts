@@ -5,14 +5,19 @@ export default async function request_Anthropic(prompt: string) : Promise<any> {
         apiKey: process.env["ANTHROPIC_API_KEY"]
     });
 
-    const msg= await anthropic.messages.create({
+    const msg = await anthropic.messages.create({
         model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
+        max_tokens: 4096,
+        messages: [{ 
+            role: "user", 
+            content: prompt 
+        }],
+        temperature: 0.7,
+        system: "You are a professional copywriter. Always return responses in valid JSON format when asked. Never truncate or shorten the response. Complete all sections fully."
     });
 
+    console.log('Anthropic API response:', msg.content);
     return (msg.content[0] as any).text;
-
 }
 
 export async function getPostTitleAndContent(thoughts: string, memory: string): Promise<any> {

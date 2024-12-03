@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Menu, PenSquare, RotateCcw, Share2, ImagePlus, X, Copy } from 'lucide-react'
+import { Menu, PenSquare, RotateCcw, Share2, ImagePlus, X, Copy, Check } from 'lucide-react'
 import {notFound, useParams, useRouter} from "next/navigation"
 import Image from "next/image"
 import { ShareTwitter } from "@/components/share-twitter"
@@ -33,14 +33,18 @@ export default function PostPage() {
   const [regeneratePrompt, setRegeneratePrompt] = useState("")
   const [currentPost, setCurrentPost] = useState<Tables<'content_items'> | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isRegenerating, setIsRegenerating] = useState(false)
+  const [showRegenerationSuccess, setShowRegenerationSuccess] = useState(false)
  // const [media, setMedia] = useState<string | null>(null)
   const [selectedText, setSelectedText] = useState("")
   const [aiInstructions, setAiInstructions] = useState("")
+  const [regeneratedText, setRegeneratedText] = useState<string | null>(null)
+  const [isRegeneratingSelection, setIsRegeneratingSelection] = useState(false)
+  const [selectionStart, setSelectionStart] = useState<number | null>(null)
+  const [selectionEnd, setSelectionEnd] = useState<number | null>(null)
   const [isTwitterPopupOpen, setIsTwitterPopupOpen] = useState(false)
   const [activeNetwork, setActiveNetwork] = useState<'x' | 'linkedin' | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [selectionStart, setSelectionStart] = useState<number | null>(null);
-  const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
   const [charCount, setCharCount] = useState(0)
   const [showToast, setShowToast] = useState(false)
   const [isLinkedInPopupOpen, setIsLinkedInPopupOpen] = useState(false)
@@ -101,45 +105,83 @@ export default function PostPage() {
         setSelectedText(selectedText)
         setSelectionStart(start)
         setSelectionEnd(end)
+        setRegeneratedText(null) // Clear any previous regeneration
       } else {
-        setSelectedText('')
-        setSelectionStart(null)
-        setSelectionEnd(null)
+        clearSelection()
       }
     }
   }
 
   const clearSelection = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.backgroundColor = 'transparent'
-    }
     setSelectedText('')
+    setSelectionStart(null)
+    setSelectionEnd(null)
+    setAiInstructions('')
+    setRegeneratedText(null)
   }
 
-  const regenerateSelectedText = () => {
-    if (!currentPost || !textareaRef.current) return;
+  const regenerateSelectedText = async () => {
+    if (!currentPost || !textareaRef.current || !selectedText || !aiInstructions) return;
     
-    const currentValue = textareaRef.current.value
-    const start = currentValue.indexOf(selectedText)
-    if (start !== -1) {
-      const newValue = currentValue.slice(0, start) + 
-                       selectedText + " [AI regenerated: " + aiInstructions + "]" + 
-                       currentValue.slice(start + selectedText.length)
+    setIsRegeneratingSelection(true);
+    try {
+      // Prepare the request body and ensure proper encoding
+      const requestBody = {
+        postId: currentPost.id,
+        selectedText: selectedText.replace(/[\uD800-\uDFFF]/g, ''), // Remove surrogate pairs
+        fullText: (editMode === 'x' ? currentPost.x_description : currentPost.linkedin_description)?.replace(/[\uD800-\uDFFF]/g, ''),
+        regenerationInstructions: aiInstructions,
+        platform: editMode
+      };
+
+      const response = await fetch('/api/post/regenerate-selection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const data = await response.json();
       
-      if (editMode === 'x') {
-        setCurrentPost({
-          ...currentPost,
-          x_description: newValue ?? ''
-        })
-      } else if (editMode === 'linkedin') {
-        setCurrentPost({
-          ...currentPost,
-          linkedin_description: newValue ?? ''
-        })
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to regenerate text');
       }
+
+      setRegeneratedText(data.data.regeneratedText);
+    } catch (error) {
+      console.error('Error regenerating text:', error);
+      alert(error instanceof Error ? error.message : 'Failed to regenerate text');
+    } finally {
+      setIsRegeneratingSelection(false);
     }
-    setSelectedText("")
-    setAiInstructions("")
+  }
+
+  const applyRegeneratedText = () => {
+    if (!currentPost || !textareaRef.current || !regeneratedText || selectionStart === null || selectionEnd === null) return;
+
+    const currentValue = textareaRef.current.value;
+    const newValue = currentValue.slice(0, selectionStart) + 
+                     regeneratedText + 
+                     currentValue.slice(selectionEnd);
+
+    if (editMode === 'x') {
+      if (newValue.length > 280) {
+        alert("The regenerated text would exceed X's character limit");
+        return;
+      }
+      setCurrentPost({
+        ...currentPost,
+        x_description: newValue
+      });
+    } else if (editMode === 'linkedin') {
+      setCurrentPost({
+        ...currentPost,
+        linkedin_description: newValue
+      });
+    }
+
+    clearSelection();
   }
 
   const handleShare = (network: 'x' | 'linkedin') => {
@@ -251,6 +293,46 @@ export default function PostPage() {
     setTimeout(() => setShowToast(false), 2000)
   }
 
+  const handleRegenerate = async () => {
+    if (!currentPost || !regeneratePrompt) return;
+
+    setIsRegenerating(true);
+    try {
+      const response = await fetch('/api/post/regenerate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postId: currentPost.id,
+          regenerationInstructions: regeneratePrompt,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to regenerate post');
+      }
+
+      const { data } = await response.json();
+      
+      setCurrentPost({
+        ...currentPost,
+        x_description: data.x_description,
+        linkedin_description: data.linkedin_description,
+      });
+
+      setRegeneratePrompt('');
+      setShowRegenerationSuccess(true);
+      setTimeout(() => setShowRegenerationSuccess(false), 3000);
+    } catch (error) {
+      console.error('Error regenerating post:', error);
+      // You might want to show an error toast here
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -356,10 +438,31 @@ export default function PostPage() {
                 onChange={(e) => setRegeneratePrompt(e.target.value)}
                 className="min-h-[180px]"
               />
-              <Button className="mt-4 w-full" disabled={!regeneratePrompt}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Regenerate Posts
+              <Button 
+                className="mt-4 w-full relative" 
+                disabled={!regeneratePrompt || isRegenerating}
+                onClick={handleRegenerate}
+              >
+                {isRegenerating ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Regenerate Posts
+                  </>
+                )}
               </Button>
+              {showRegenerationSuccess && (
+                <div className="mt-2 text-center text-sm text-green-600 animate-fade-out">
+                  Regeneration complete!
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -406,26 +509,14 @@ export default function PostPage() {
                       <div className="absolute bottom-2 right-2 text-sm text-gray-500">
                         {charCount}/280
                       </div>
-                      {selectedText && selectionStart !== null && selectionEnd !== null && (
-                        <div 
-                          className="absolute top-0 left-0 right-0 bottom-0 pointer-events-none"
-                        >
-                          <div 
-                            className="absolute bg-blue-100"
-                            style={{
-                              left: `${selectionStart! * 8}px`, // Approximate character width
-                              width: `${(selectionEnd! - selectionStart!) * 8}px`, // Width based on selection length
-                              top: '0',
-                              height: '100%'
-                            }}
-                          />
-                        </div>
-                      )}
                     </div>
                     {selectedText && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 p-4 border rounded-md bg-gray-50">
+                        <div className="text-sm font-medium text-gray-700">Selected Text:</div>
+                        <div className="p-2 bg-white rounded border">{selectedText}</div>
+                        
                         <Textarea
-                          placeholder="Enter AI instructions for the selected text"
+                          placeholder="Enter instructions for regenerating this text"
                           value={aiInstructions}
                           onChange={(e) => {
                             setAiInstructions(e.target.value)
@@ -439,9 +530,57 @@ export default function PostPage() {
                           }}
                           className="min-h-[50px]"
                         />
-                        <Button onClick={regenerateSelectedText} disabled={!aiInstructions}>
-                          Regenerate Selected Text
-                        </Button>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={regenerateSelectedText} 
+                            disabled={!aiInstructions || isRegeneratingSelection}
+                            className="relative"
+                          >
+                            {isRegeneratingSelection ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Regenerating...
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Regenerate Selection
+                              </>
+                            )}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={clearSelection}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+
+                        {regeneratedText && (
+                          <div className="mt-4 space-y-2">
+                            <div className="text-sm font-medium text-gray-700">Regenerated Text:</div>
+                            <div className="p-2 bg-white rounded border">{regeneratedText}</div>
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={applyRegeneratedText}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="mr-2 h-4 w-4" />
+                                Apply Changes
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setRegeneratedText(null)}
+                              >
+                                Discard
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="flex gap-2">
@@ -508,24 +647,14 @@ export default function PostPage() {
                         style={{ height: textareaRef.current?.scrollHeight + 'px' }}
                         onSelect={handleTextSelection}
                       />
-                      {selectedText && selectionStart !== null && selectionEnd !== null && (
-                        <div 
-                          className="absolute inset-0 pointer-events-none"
-                          style={{
-                            background: `linear-gradient(90deg, 
-                              transparent 0%,
-                              #dbeafe ${(selectionStart / (textareaRef.current?.value.length || 1)) * 100}%, 
-                              #dbeafe ${(selectionEnd / (textareaRef.current?.value.length || 1)) * 100}%,
-                              transparent ${(selectionEnd / (textareaRef.current?.value.length || 1)) * 100}%
-                            )`
-                          }}
-                        />
-                      )}
                     </div>
                     {selectedText && (
-                      <div className="space-y-2">
+                      <div className="space-y-2 p-4 border rounded-md bg-gray-50">
+                        <div className="text-sm font-medium text-gray-700">Selected Text:</div>
+                        <div className="p-2 bg-white rounded border">{selectedText}</div>
+                        
                         <Textarea
-                          placeholder="Enter AI instructions for the selected text"
+                          placeholder="Enter instructions for regenerating this text"
                           value={aiInstructions}
                           onChange={(e) => {
                             setAiInstructions(e.target.value)
@@ -539,9 +668,57 @@ export default function PostPage() {
                           }}
                           className="min-h-[50px]"
                         />
-                        <Button onClick={regenerateSelectedText} disabled={!aiInstructions}>
-                          Regenerate Selected Text
-                        </Button>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={regenerateSelectedText} 
+                            disabled={!aiInstructions || isRegeneratingSelection}
+                            className="relative"
+                          >
+                            {isRegeneratingSelection ? (
+                              <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Regenerating...
+                              </>
+                            ) : (
+                              <>
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Regenerate Selection
+                              </>
+                            )}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={clearSelection}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+
+                        {regeneratedText && (
+                          <div className="mt-4 space-y-2">
+                            <div className="text-sm font-medium text-gray-700">Regenerated Text:</div>
+                            <div className="p-2 bg-white rounded border">{regeneratedText}</div>
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={applyRegeneratedText}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="mr-2 h-4 w-4" />
+                                Apply Changes
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => setRegeneratedText(null)}
+                              >
+                                Discard
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="flex gap-2">
