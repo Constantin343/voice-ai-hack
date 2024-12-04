@@ -5,14 +5,17 @@ import { RetellWebClient } from "retell-client-js-sdk";
 import { Loader2 } from "lucide-react"
 import AnimatedLogo from '../AnimatedLogo'
 import { toast } from 'sonner'
+import { createClient } from '@/utils/supabase/client'
 
 interface OnboardingAgentProps {
   isSpeaking: boolean;
+  onboardingAgentId: string;
   onTranscriptReceived: (transcript: string) => void;
 }
 
 export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({ 
   isSpeaking,
+  onboardingAgentId,
   onTranscriptReceived 
 }) => {
   const retellClientRef = useRef<RetellWebClient | null>(null);
@@ -61,7 +64,7 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ isOnboarding: true }),
+          body: JSON.stringify({ isOnboarding: true, onboarding_agent_id: onboardingAgentId }),
           credentials: 'include',
         });
         
@@ -77,6 +80,9 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
         }
       } catch (error) {
         console.error("Failed to fetch token:", error);
+        toast.error('Error', {
+          description: 'Failed to initialize onboarding experience.',
+        });
         return null;
       }
     };

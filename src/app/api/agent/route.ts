@@ -66,23 +66,10 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json().catch(() => ({}));
     
-    // Use different agent ID for onboarding
     let agentId = 'agent_4ca809823f3c30a1cd561b3943'; // default agent
     
-    if (body.isOnboarding) {
-        // Check if we already have an onboarding agent for this user
-      const { data: agentData } = await supabase
-        .from('user_agents')
-        .select('onboarding_agent_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (agentData?.onboarding_agent_id) {
-        agentId = agentData.onboarding_agent_id;
-      } else {
-        // TODO: remove
-        agentId = "agent_4ca809823f3c30a1cd561b3943"
-      } 
+    if (body.onboarding_agent_id) {    
+      agentId = body.onboarding_agent_id;
     } else if (body.agent_id) {
       agentId = body.agent_id;
     }
