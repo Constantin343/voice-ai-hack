@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Retell from 'retell-sdk';
 import { createClient } from "@/utils/supabase/server";
 import { checkUserSubscription } from "@/lib/subscription";
+import { createOnboardingAgent } from "@/services/agent";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -36,15 +37,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const client = new Retell({
+      apiKey,
+      fetch: fetch
+    });
+
     // Add warning when approaching limit
     if (remainingPosts <= 3 && !isSubscribed) {
-      const client = new Retell({
-        apiKey,
-        fetch: fetch
-      });
 
       const body = await req.json().catch(() => ({}));
-      let agentId = 'agent_44d9118a49a822e22bfc1c2023';
+      let agentId = '';
       
       if (body.agent_id) {
         agentId = body.agent_id;
@@ -62,15 +64,13 @@ export async function POST(req: NextRequest) {
       }, { status: 403 });
     }
 
-    const client = new Retell({
-      apiKey,
-      fetch: fetch
-    });
-
     const body = await req.json().catch(() => ({}));
-    let agentId = 'agent_44d9118a49a822e22bfc1c2023';
     
-    if (body.agent_id) {
+    let agentId = 'agent_4ca809823f3c30a1cd561b3943'; // default agent
+    
+    if (body.onboarding_agent_id) {    
+      agentId = body.onboarding_agent_id;
+    } else if (body.agent_id) {
       agentId = body.agent_id;
     }
 

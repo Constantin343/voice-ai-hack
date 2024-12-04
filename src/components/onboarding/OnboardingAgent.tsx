@@ -1,38 +1,33 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
 import { RetellWebClient } from "retell-client-js-sdk";
-import { useRouter } from 'next/navigation'
 import { Loader2 } from "lucide-react"
-import { useAgent } from '@/contexts/AgentContext'
-import AnimatedLogo from './AnimatedLogo'
-import { UpgradeDialog } from './UpgradeDialog'
-import { FreeTrialWarningDialog } from './FreeTrialWarningDialog'
+import AnimatedLogo from '../AnimatedLogo'
 import { toast } from 'sonner'
+import { createClient } from '@/utils/supabase/client'
 
-interface AnimatedAgentProps {
-  isSpeaking: boolean
+interface OnboardingAgentProps {
+  isSpeaking: boolean;
+  onboardingAgentId: string;
+  onProcessed: () => void;
 }
 
-export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
-  const router = useRouter();
-  const { agentId } = useAgent();
+export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({ 
+  isSpeaking,
+  onboardingAgentId,
+  onProcessed 
+}) => {
   const retellClientRef = useRef<RetellWebClient | null>(null);
   const [devices, setDevices] = useState<{ audio: MediaDeviceInfo[] }>({ audio: [] });
   const [token, setToken] = useState('');
   const [callId, setCallId] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  const [showWarningDialog, setShowWarningDialog] = useState(false);
-  const [remainingPosts, setRemainingPosts] = useState(10);
-  const [hasSeenWarning, setHasSeenWarning] = useState(false);
 
-  // Get available audio devices
+  // Reuse the audio device setup code from AnimatedAgent
   useEffect(() => {
     async function getAudioDevices() {
       try {
-        // Add explicit constraints for mobile
         const constraints = {
           audio: {
             echoCancellation: true,
@@ -42,8 +37,6 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         };
         
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // Ensure we stop the stream after getting permission
         stream.getTracks().forEach(track => track.stop());
         
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -56,14 +49,13 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         setDevices({ audio: audioDevices });
       } catch (error) {
         console.error("Error accessing audio devices:", error);
-        // Add user-friendly error handling here if needed
       }
     }
 
     getAudioDevices();
   }, []);
 
-  // Update the token fetch useEffect
+  // Modified token fetch for onboarding
   useEffect(() => {
     const fetchToken = async () => {
       try {
@@ -72,36 +64,25 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ agent_id: agentId }),
+          body: JSON.stringify({ isOnboarding: true, onboarding_agent_id: onboardingAgentId }),
           credentials: 'include',
         });
         
         const data = await response.json();
         
-        if (response.status === 403) {
-          if (data.error?.includes('Free tier limit reached')) {
-            setShowUpgradeDialog(true);
-            return null; // Return null to prevent call setup
-          }
-          if (data.warning?.includes('Free tier limit approaching') && !hasSeenWarning) {
-            setRemainingPosts(data.remainingPosts);
-            setShowWarningDialog(true);
-            setToken(''); // Don't set the token yet
-            return null; // Return null to prevent call setup
-          }
-        }
-        
         if (!data.accessToken) {
           throw new Error('No access token received');
         }
         
-        console.log('token received');
         setToken(data.accessToken);
         if (data.callId) {
           setCallId(data.callId);
         }
       } catch (error) {
         console.error("Failed to fetch token:", error);
+        toast.error('Error', {
+          description: 'Failed to initialize onboarding experience.',
+        });
         return null;
       }
     };
@@ -109,14 +90,9 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     if (isSpeaking) {
       fetchToken();
     }
-  }, [isSpeaking, agentId]);
+  }, [isSpeaking]);
 
-  // Add handler for warning dialog close
-  const handleWarningClose = async () => {
-    setShowWarningDialog(false);
-    setHasSeenWarning(true);
-  };
-
+  // Modified call handling for onboarding
   useEffect(() => {
 
     const setupRetellCall = async () => {
@@ -195,7 +171,7 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         setIsProcessing(true);
         
         try {
-          const response = await fetch('/api/agent/post', {
+          const response = await fetch('/api/agent/persona', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -207,21 +183,12 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
             throw new Error('Failed to process call');
           }
 
-          const data = await response.json();
-          
-          try {
-            router.push(`/post/${data.data.id}`);
-          } catch (error) {
-            console.error('Error navigating:', error);
-            // Fallback navigation attempt
-            window.location.href = `/post/${data.data.id}`;
-          } finally {
-            setIsProcessing(false);
-            setCallId('');
-          }
+          onProcessed();
 
         } catch (error) {
-          console.error('Error sending post request:', error);
+          console.error('Error processing persona:', error);
+          toast.error('Failed to process response');
+        } finally {
           setIsProcessing(false);
           setCallId('');
         }
@@ -243,7 +210,10 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         retellClientRef.current = null;
       }
     };
-  }, [token, devices.audio, isSpeaking, callId, router]);
+
+    // ... Rest of the effect code similar to AnimatedAgent ...
+
+  }, [token, devices.audio, isSpeaking, callId, onProcessed]);
 
   return (
     <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
@@ -253,16 +223,6 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
         </div>
       )}
       <AnimatedLogo isSpeaking={isSpeaking} />
-      <UpgradeDialog 
-        isOpen={showUpgradeDialog} 
-        onClose={() => setShowUpgradeDialog(false)} 
-      />
-      <FreeTrialWarningDialog 
-        isOpen={showWarningDialog}
-        onClose={handleWarningClose}
-        remainingPosts={remainingPosts}
-      />
     </div>
-  )
-}
-
+  );
+} 

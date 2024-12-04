@@ -5,6 +5,8 @@ import DataProcessingScreen from "@/components/onboarding/data-processing-screen
 import PersonaCreationScreen from "@/components/onboarding/persona-creation-screen";
 import SummaryScreen from "@/components/onboarding/summary-screen";
 import RequestLinkedinScreen from "@/components/onboarding/request-linkedin-screen";
+import { Toaster } from 'sonner';
+
 
 export default function OnboardingScreen() {
     const [currentStep, setCurrentStep] = useState(0);
@@ -54,6 +56,7 @@ export default function OnboardingScreen() {
                     {screen}
                 </div>
             ))}
+            <Toaster />
         </div>
     );
 }

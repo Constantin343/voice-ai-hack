@@ -1,36 +1,73 @@
 'use client';
 import { useState } from "react";
+import { OnboardingAgent } from "./OnboardingAgent";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
 
 export default function PersonaCreationScreen({ onNext }: { onNext: () => void }) {
-    const [question, setQuestion] = useState("What are your goals for using this app?");
-    const [response, setResponse] = useState("");
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [onboardingAgentId, setOnboardingAgentId] = useState("");
 
-    const handleVoiceInput = (input: string) => {
-        setResponse(input);
-
-        // Example logic for setting the next question or transitioning to the next step
-        if (input.length > 10) {
-            onNext(); // Proceed to the next screen when the response is meaningful
-        } else {
-            setQuestion("Can you elaborate a bit more?");
+    const handleIsSpeaking = async (isSpeaking: boolean) => {
+        if (!isSpeaking) {
+            setIsSpeaking(false);
+            return;
         }
+
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+            throw new Error('User not authenticated');
+        }
+
+        // Check for onboarding agent
+        const { data: userAgent, error } = await supabase
+            .from('user_agent')
+            .select('onboarding_agent_id')
+            .eq('user_id', user.id)
+            .single();
+
+        if (error || !userAgent || !userAgent.onboarding_agent_id) {
+            toast.error('Setup in progress', {
+                description: 'Still setting up your onboarding experience. Please try again in 20 seconds.',
+            });
+            return;
+        }
+
+        setOnboardingAgentId(userAgent.onboarding_agent_id);
+        setIsSpeaking(true);
+    }
+
+    const handleProcessed = () => {
+        setIsSpeaking(false);
+        onNext();
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full">
-            <h1 className="text-2xl font-semibold mb-6">{question}</h1>
-            <div className="w-3/4 text-center">
-                <p>We’re listening... Please answer the question using your voice.</p>
-                <button
-                    className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-                    onClick={() => handleVoiceInput("Sample voice response")}
-                >
-                    Simulate Voice Input
-                </button>
+        <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto px-4">
+            <h2 className="text-2xl font-semibold mb-6">Let's Get to Know You</h2>
+            
+            {!isSpeaking && (
+                <div className="w-full text-center mb-8">
+                    <p className="text-muted-foreground">
+                        Our AI assistant will ask you a few questions to understand your needs better.
+                        Click the icon below to start the conversation.
+                    </p>
+                </div>
+            )}
+
+            <div 
+                onClick={() => handleIsSpeaking(!isSpeaking)}
+                className="cursor-pointer"
+            >
+                <OnboardingAgent 
+                    isSpeaking={isSpeaking}
+                    onboardingAgentId={onboardingAgentId}
+                    onProcessed={handleProcessed}
+                />
             </div>
-            <div className="mt-4">
-                <p className="text-lg">Your response: {response}</p>
-            </div>
+
         </div>
     );
 }
