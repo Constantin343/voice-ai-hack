@@ -19,7 +19,6 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   const router = useRouter();
   const { agentId } = useAgent();
   const retellClientRef = useRef<RetellWebClient | null>(null);
-  const [rotation, setRotation] = useState(0);
   const [devices, setDevices] = useState<{ audio: MediaDeviceInfo[] }>({ audio: [] });
   const [token, setToken] = useState('');
   const [callId, setCallId] = useState<string>('');
@@ -119,7 +118,6 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
 
     const setupRetellCall = async () => {
       try {
@@ -234,15 +232,11 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
       console.log('🎤 isSpeaking activated, initiating call...');
       setupRetellCall();
       
-      interval = setInterval(() => {
-        setRotation((prev) => (prev + 10) % 360);
-      }, 100);
     } else if (!isSpeaking && retellClientRef.current) {
       cleanupCall();
     }
 
     return () => {
-      if (interval) clearInterval(interval);
       if (retellClientRef.current && !isSpeaking) {
         console.log('🧹 Cleanup: Stopping Retell call');
         retellClientRef.current.stopCall();

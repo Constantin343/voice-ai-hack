@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { RetellWebClient } from "retell-client-js-sdk";
 import { Loader2 } from "lucide-react"
-import AnimatedLogo from './AnimatedLogo'
+import AnimatedLogo from '../AnimatedLogo'
 import { toast } from 'sonner'
 
 interface OnboardingAgentProps {
@@ -88,8 +88,70 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
 
   // Modified call handling for onboarding
   useEffect(() => {
+
     const setupRetellCall = async () => {
-      // ... Same call setup code as AnimatedAgent ...
+      try {
+        if (!token) {
+          return;
+        }
+
+        if (!retellClientRef.current) {
+          retellClientRef.current = new RetellWebClient();
+          
+          // Set up event listeners
+          retellClientRef.current.on("call_started", () => {
+            console.log("🎤 Call started");
+          });
+
+          retellClientRef.current.on("call_ended", () => {
+            console.log("📞 Call ended");
+          });
+
+          retellClientRef.current.on("agent_start_talking", () => {
+            console.log("🗣️ Agent started talking");
+          });
+
+          retellClientRef.current.on("agent_stop_talking", () => {
+            console.log("🤐 Agent stopped talking");
+          });
+
+          retellClientRef.current.on("error", (error) => {
+            console.error("❌ An error occurred:", error);
+            retellClientRef.current?.stopCall();
+          });
+
+          // Add transcript handling
+          retellClientRef.current.on("update", (update) => {
+            if (update.transcript) {
+              console.log("📝 Transcript:", update.transcript);
+            }
+          });
+        }
+
+        // Get default audio device with fallback
+        const defaultAudioDevice = devices.audio[0]?.deviceId || 'default';
+
+        // Add more detailed logging
+        console.log('Starting call with config:', {
+          accessToken: token ? 'present' : 'missing',
+          deviceId: defaultAudioDevice,
+          audioDevices: devices.audio.length
+        });
+
+        await retellClientRef.current.startCall({
+          accessToken: token,
+          sampleRate: 24000,
+          captureDeviceId: defaultAudioDevice,
+          playbackDeviceId: 'default',
+          emitRawAudioSamples: false,
+        });
+
+      } catch (error) {
+        console.error("Failed to setup Retell call:", error);
+        toast.error('Connection failed', {
+          description: 'Unable to establish call connection. Please try again.',
+        });
+      }
     };
 
     const cleanupCall = async () => {
@@ -125,6 +187,22 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
           setIsProcessing(false);
           setCallId('');
         }
+      }
+    };
+
+    if (isSpeaking && devices.audio.length > 0) {
+      console.log('🎤 isSpeaking activated, initiating call...');
+      setupRetellCall();
+      
+    } else if (!isSpeaking && retellClientRef.current) {
+      cleanupCall();
+    }
+
+    return () => {
+      if (retellClientRef.current && !isSpeaking) {
+        console.log('🧹 Cleanup: Stopping Retell call');
+        retellClientRef.current.stopCall();
+        retellClientRef.current = null;
       }
     };
 

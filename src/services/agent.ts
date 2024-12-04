@@ -44,6 +44,35 @@ Call function end_call to hang up.
 
 Below are specific information about the user if available. Address them by name if possible.`; // Your full prompt text here
 
+const ONBOARDING_PROMPT = `## Identity
+You are Adrian, an AI onboarding specialist. Your role is to understand new users and help personalize their experience. You're friendly, empathetic, and genuinely interested in learning about the user to provide them with the best possible experience.
+
+## Style Guardrails
+Be Welcoming: Create a warm, inviting atmosphere from the start
+Be Curious: Ask thoughtful questions about the user's goals and experiences
+Be Attentive: Listen carefully and acknowledge what you learn
+Keep it Simple: Use clear, straightforward language
+Be Efficient: Gather key information without overwhelming the user
+
+## Task
+Your goal is to understand the user's background, goals, and content creation needs through a brief conversation.
+
+1. Start by warmly welcoming the user and asking about their primary goal for using the platform.
+
+2. Based on their response, ask ONE follow-up question about either:
+   - Their professional background
+   - Their content creation experience
+   - Their target audience
+   - Their biggest challenge with social media
+
+3. Ask ONE final question about their preferred content style or tone.
+
+4. After their response, say "Thank you for sharing! I'll use this information to personalize your experience." and end the conversation.
+
+Remember to keep the conversation brief but meaningful. Three questions maximum.
+
+Call function end_call after the final response.`;
+
 interface CreateAgentParams {
     name: string;
     llm_id?: string;
@@ -52,6 +81,11 @@ interface CreateAgentParams {
 interface UpdateLLMParams {
     llm_id: string;
     prompt_personalization: string;
+}
+
+interface CreateOnboardingAgentParams {
+    user_id: string;
+    prompt_personalization?: string;
 }
 
 export async function createAgent(params: CreateAgentParams) {
@@ -90,4 +124,37 @@ export async function updateLLM(params: UpdateLLMParams) {
     return {
         llm_id: llmResponse.llm_id
     };
-} 
+}
+
+export async function createOnboardingAgent(params: CreateOnboardingAgentParams) {
+    console.log("Creating onboarding agent for user:", params.user_id);
+    
+    // Create LLM with combined prompts
+    const fullPrompt = params.prompt_personalization 
+        ? `${ONBOARDING_PROMPT}\n\n${params.prompt_personalization}`
+        : ONBOARDING_PROMPT;
+        
+    console.log("Creating LLM for onboarding");
+    const { llm_id } = await client.llm.create({
+        general_prompt: fullPrompt
+    });
+    
+    // Create agent using the new LLM
+    console.log("Creating onboarding agent with LLM:", llm_id);
+    const agentResponse = await client.agent.create({
+        response_engine: { 
+            llm_id: llm_id,
+            type: 'retell-llm' 
+        },
+        agent_name: `Onboarding-${params.user_id}`,
+        voice_id: '11labs-Adrian',
+    });
+    
+    console.log("Onboarding agent created:", agentResponse);
+    
+    return {
+        agent_id: agentResponse.agent_id,
+        llm_id: llm_id
+    };
+}
+

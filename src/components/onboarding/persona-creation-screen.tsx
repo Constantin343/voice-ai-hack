@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { OnboardingAgent } from "../OnboardingAgent";
+import { OnboardingAgent } from "./OnboardingAgent";
 
 export default function PersonaCreationScreen({ onNext }: { onNext: () => void }) {
     const [isSpeaking, setIsSpeaking] = useState(false);
