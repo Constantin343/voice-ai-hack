@@ -4,6 +4,9 @@ import { stripe } from '@/lib/stripe'
 import { createClient } from '@/utils/supabase/server'
 import Stripe from 'stripe'
 
+export const runtime = 'edge'
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: Request) {
   console.log('Webhook received')
   
