@@ -22,7 +22,7 @@ export default async function ProtectedLayout({
     let { data: user } = await (await supabase)
         .from('users')
         .select("is_onboarded")
-        .eq('user_id', await authUser)
+        .eq('user_id', (await authUser)?.id)
         .single();
     return user && user.is_onboarded;
   }, []);

@@ -8,7 +8,7 @@ export default function IntroVideoScreen({ onNext }: { onNext: () => void }) {
         // Enable the button after 40 seconds
         const timer = setTimeout(() => {
             setIsButtonDisabled(false);
-        }, 40000);
+        }, 50000);
 
         // Cleanup the timer when the component unmounts
         return () => clearTimeout(timer);

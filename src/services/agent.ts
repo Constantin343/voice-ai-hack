@@ -129,7 +129,6 @@ export async function updateLLM(params: UpdateLLMParams) {
     };
 }
 
-// @Sergiu This is the function that creates the onboarding agent for a new user.
 export async function createOnboardingAgent(params: CreateOnboardingAgentParams) {
     console.log("Creating onboarding agent for user:", params.user_id);
     
@@ -164,7 +163,6 @@ export async function createOnboardingAgent(params: CreateOnboardingAgentParams)
             user_id: params.user_id,
             onboarding_agent_id: agentResponse.agent_id,
             onboarding_llm_id: llm_id,
-            type: 'onboarding'
         }, {
             onConflict: 'user_id'
         });

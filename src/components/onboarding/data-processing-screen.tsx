@@ -1,33 +1,36 @@
-'use client';
+import { createClient } from "@/utils/supabase/client";
+import { useEffect, useState } from "react";
+import {User} from "@supabase/auth-js";
 
-import { useState, useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-const messages = [
-    'Scraping your linkedin information',
-    'Processing the information',
-    'Crafting your first persona',
-    'Identifying missing information',
-    'Done. Let\'s round up your persona',
-];
-
-export default function DataProcessingScreen({ onNext }: { onNext: () => void }) {
-    const [currentMessage, setCurrentMessage] = useState(0);
-    const [showButton, setShowButton] = useState(false);
+export default function SummaryScreen({ onNext }: { onNext: () => void }) {
+    const supabase = createClient();
+    const [user, setUser] = useState<User | null>(null);
+    const [persona, setPersona] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentMessage((prev) => {
-                if (prev < messages.length - 1) return prev + 1;
+        // Fetch user and persona data
+        const fetchData = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                setUser(user);
 
-                clearInterval(interval); // Stop cycling messages after the last one
-                setTimeout(() => setShowButton(true), 500); // Show button after spinner fades out
-                return prev;
-            });
-        }, 3000); // Change message every 3 seconds
+                if (user) {
+                    const { data: persona } = await supabase
+                        .from("user_personas")
+                        .select("*")
+                        .filter("user_id", "eq", user.id)
+                        .single();
+                    setPersona(persona);
+                }
+            } catch (error) {
+                console.error("Error fetching persona:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        return () => clearInterval(interval); // Cleanup on unmount
+        fetchData();
     }, []);
 
     return (
@@ -47,36 +50,48 @@ export default function DataProcessingScreen({ onNext }: { onNext: () => void })
                 </div>
             </div>
 
-            {/* Processing Section */}
+            {/* Persona Summary Section */}
             <div className="text-center w-full max-w-md p-6 bg-white shadow-lg rounded-xl border border-gray-200">
-                {/* Spinner */}
-                <div
-                    className={`flex justify-center items-center overflow-hidden transition-all duration-500 ${
-                        showButton ? 'opacity-0 max-h-0' : 'opacity-100 max-h-14'
-                    }`}
-                >
-                    <Loader2 className="w-14 h-14 text-[#2d12e9] animate-spin" />
-                </div>
-
-                {/* Message */}
-                <p className="pt-4 text-lg font-medium text-gray-800">{messages[currentMessage]}</p>
+                {loading ? (
+                    <p className="text-gray-500">Loading your persona...</p>
+                ) : persona ? (
+                    <div className="space-y-4">
+                        <div>
+                            <h2 className="text-xl font-semibold">Introduction</h2>
+                            <p className="text-gray-700">{persona.introduction || "N/A"}</p>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Uniqueness</h2>
+                            <p className="text-gray-700">{persona.uniqueness || "N/A"}</p>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Audience</h2>
+                            <p className="text-gray-700">{persona.audience || "N/A"}</p>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Value Proposition</h2>
+                            <p className="text-gray-700">{persona.value_proposition || "N/A"}</p>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Style</h2>
+                            <p className="text-gray-700">{persona.style || "N/A"}</p>
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-semibold">Goals</h2>
+                            <p className="text-gray-700">{persona.goals || "N/A"}</p>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-gray-500">No persona data found.</p>
+                )}
 
                 {/* Button */}
-                <div
-                    className={`mt-8 transition-all duration-500 ${
-                        showButton ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
-                    }`}
+                <button
+                    onClick={onNext}
+                    className="mt-8 bg-[#2d12e9] text-white px-4 py-2 rounded hover:bg-[#2d12e9]/90"
                 >
-                    {showButton && (
-                        <Button
-                            size="lg"
-                            className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
-                            onClick={onNext}
-                        >
-                            Let’s Get Started
-                        </Button>
-                    )}
-                </div>
+                    Finish Onboarding
+                </button>
             </div>
         </div>
     );
