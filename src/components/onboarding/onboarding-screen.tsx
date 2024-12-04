@@ -30,12 +30,14 @@ export default function OnboardingScreen() {
 
     const screens = [
         <DataProcessingScreen onNext={goToNextStep}/>,
-
-        <RequestLinkedinScreen onLinkedInSubmit={handleLinkedInScraping} onNext={goToNextStep}/>,
+        <PersonaCreationScreen onNext={goToNextStep}/>,
         <IntroVideoScreen onNext={goToNextStep}/>,
         <DataProcessingScreen onNext={goToNextStep}/>,
-        <PersonaCreationScreen onNext={goToNextStep}/>,
-        <SummaryScreen onNext={() => console.log("Onboarding completed!")}/>
+        
+        <SummaryScreen onNext={() => console.log("Onboarding completed!")}/>,
+
+        <RequestLinkedinScreen onLinkedInSubmit={handleLinkedInScraping} onNext={goToNextStep}/>,
+       
     ];
 
     return (

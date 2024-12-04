@@ -68,9 +68,12 @@ export async function POST(req: NextRequest) {
     });
 
     const body = await req.json().catch(() => ({}));
-    let agentId = 'agent_44d9118a49a822e22bfc1c2023';
     
-    if (body.agent_id) {
+    // Use different agent ID for onboarding
+    let agentId = 'agent_44d9118a49a822e22bfc1c2023'; // default agent
+    if (body.isOnboarding) {
+      agentId = 'agent_onboarding_id'; // Replace with your onboarding agent ID
+    } else if (body.agent_id) {
       agentId = body.agent_id;
     }
 
