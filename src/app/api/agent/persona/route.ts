@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     if (!process.env.RETELL_API_KEY) {
       return NextResponse.json(
         { error: 'RETELL_API_KEY is not set' },
@@ -48,14 +48,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO: Process the transcript to extract persona information
-    // For now, just return the transcript
+    // @Sergiu here we have to call the anthropic function to extract the persona information with the transcript as additional context and save it to the database
+    // await extractPersonaFromTranscript(transcript);
+
     return NextResponse.json({ 
-      success: true,
-      data: {
-        transcript,
-        // Add processed persona data here later
-      }
+      success: true
     });
 
   } catch (error) {
