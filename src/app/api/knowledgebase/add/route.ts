@@ -4,13 +4,21 @@ import {createClient} from "@/utils/supabase/server";
 
 export async function POST(request: Request) {
   const supabase = await createClient()
+  
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
 
   try {
-    const { title, content, category } = await request.json();
+    const { title, content } = await request.json();
     
-    if (!title || !content || !category) {
+    if (!title || !content) {
       return NextResponse.json(
-        { error: 'Title, content, and category are required' },
+        { error: 'Title and content are required' },
         { status: 400 }
       );
     }
@@ -23,8 +31,8 @@ export async function POST(request: Request) {
         {
           title: title as string,
           content: content as string,
-          category: category as string,
           embedding: JSON.stringify(embedding),
+          user_id: user.id,
         },
       ]);
 
