@@ -15,7 +15,6 @@ interface KnowledgeEntry {
   id: number;
   title: string;
   summary: string;
-  category: string;
 }
 
 export default function KnowledgePage() {
@@ -63,7 +62,6 @@ export default function KnowledgePage() {
     const data = {
       title: formData.get('title'),
       content: formData.get('content'),
-      category: formData.get('category')
     }
 
     try {
@@ -154,20 +152,6 @@ export default function KnowledgePage() {
                     placeholder="Enter the title"
                     required
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select name="category" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="marketing">Digital Marketing</SelectItem>
-                      <SelectItem value="ai">AI Technology</SelectItem>
-                      <SelectItem value="content">Content Strategy</SelectItem>
-                      <SelectItem value="social">Social Media</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="content">Content</Label>

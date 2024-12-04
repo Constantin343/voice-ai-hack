@@ -18,7 +18,6 @@ export async function updateKnowledgeBase(transcript: string, userId: string) {
                 .insert([{
                     title: point.title,
                     content: point.content,
-                    category: point.category,
                     user_id: userId,
                     embedding: embedding
                 }]);
