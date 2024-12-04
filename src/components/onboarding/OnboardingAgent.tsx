@@ -10,13 +10,13 @@ import { createClient } from '@/utils/supabase/client'
 interface OnboardingAgentProps {
   isSpeaking: boolean;
   onboardingAgentId: string;
-  onTranscriptReceived: (transcript: string) => void;
+  onProcessed: () => void;
 }
 
 export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({ 
   isSpeaking,
   onboardingAgentId,
-  onTranscriptReceived 
+  onProcessed 
 }) => {
   const retellClientRef = useRef<RetellWebClient | null>(null);
   const [devices, setDevices] = useState<{ audio: MediaDeviceInfo[] }>({ audio: [] });
@@ -183,8 +183,7 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
             throw new Error('Failed to process call');
           }
 
-          const data = await response.json();
-          onTranscriptReceived(data.data.transcript);
+          onProcessed();
 
         } catch (error) {
           console.error('Error processing persona:', error);
@@ -214,7 +213,7 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
 
     // ... Rest of the effect code similar to AnimatedAgent ...
 
-  }, [token, devices.audio, isSpeaking, callId, onTranscriptReceived]);
+  }, [token, devices.audio, isSpeaking, callId, onProcessed]);
 
   return (
     <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">

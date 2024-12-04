@@ -6,8 +6,8 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function PersonaCreationScreen({ onNext }: { onNext: () => void }) {
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [response, setResponse] = useState("");
     const [onboardingAgentId, setOnboardingAgentId] = useState("");
+
     const handleIsSpeaking = async (isSpeaking: boolean) => {
         if (!isSpeaking) {
             setIsSpeaking(false);
@@ -39,14 +39,9 @@ export default function PersonaCreationScreen({ onNext }: { onNext: () => void }
         setIsSpeaking(true);
     }
 
-    const handleTranscriptReceived = (transcript: string) => {
-        setResponse(transcript);
+    const handleProcessed = () => {
         setIsSpeaking(false);
-
-        if (transcript.toLowerCase().includes("finish") || 
-            transcript.toLowerCase().includes("done")) {
-            onNext();
-        }
+        onNext();
     };
 
     return (
@@ -69,18 +64,10 @@ export default function PersonaCreationScreen({ onNext }: { onNext: () => void }
                 <OnboardingAgent 
                     isSpeaking={isSpeaking}
                     onboardingAgentId={onboardingAgentId}
-                    onTranscriptReceived={handleTranscriptReceived}
+                    onProcessed={handleProcessed}
                 />
             </div>
 
-            {response && (
-                <div className="mt-6 w-full">
-                    <div className="bg-muted p-4 rounded-lg">
-                        <p className="text-sm text-muted-foreground">Last response:</p>
-                        <p className="text-base mt-1">{response}</p>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
