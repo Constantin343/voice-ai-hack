@@ -133,12 +133,12 @@ export default function KnowledgePage() {
       </div>
 
       {/* Knowledge Base Section */}
-      <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm">
+      <Card className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm max-w-3xl mx-auto border-black">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-[#2D12E9] dark:text-[#FFFBF0]">Knowledge Base</CardTitle>
+          <CardTitle className="text-black dark:text-[#FFFBF0]">Knowledge Base</CardTitle>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="default" className="bg-[#2D12E9] text-white hover:bg-[#2D12E9]/90">
+              <Button variant="default" className="bg-black text-white hover:bg-black/90">
                 Add Entry
               </Button>
             </DialogTrigger>
@@ -181,7 +181,7 @@ export default function KnowledgePage() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-[#2D12E9] text-white hover:bg-[#2D12E9]/90"
+                  className="w-full bg-black text-white hover:bg-black/90"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Adding...' : 'Add Entry'}
@@ -191,11 +191,11 @@ export default function KnowledgePage() {
           </Dialog>
         </CardHeader>
         <CardContent>
-          <Table>
+          <Table className="[&_tr]:border-black [&_td]:border-black [&_th]:border-black">
             <TableHeader>
               <TableRow>
-                <TableHead className="text-[#2D12E9] dark:text-[#FFFBF0]">Title</TableHead>
-                <TableHead className="text-[#2D12E9] dark:text-[#FFFBF0]">Summary</TableHead>
+                <TableHead className="text-black dark:text-[#FFFBF0]">Title</TableHead>
+                <TableHead className="text-black dark:text-[#FFFBF0]">Summary</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
