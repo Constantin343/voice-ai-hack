@@ -36,7 +36,7 @@ First, you will be given the thoughts and memory. Then, you will craft a title a
 Create a succinct, engaging, and short title for the post. Keep these tips in mind:
 - Clarity is Key: Avoid vague or overly abstract titles. Ensure the audience immediately understands the topic.
 - Make It Intriguing: Use power words or pose a question that resonates with your audience.
-- Keep It Concise: The title should be no longer than 10-12 words, with the most important words appearing early.
+- Keep It Concise: The title should be no longer than 55 characters, with the most important words appearing early.
 - Target Your Audience: Tailor the language and tone of the title to the software development or technical community.
 
 Example titles:
