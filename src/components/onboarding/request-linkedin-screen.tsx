@@ -63,7 +63,7 @@ export default function RequestLinkedinScreen({
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                 >
-                    {isSubmitting ? 'Processing...' : 'See how it works'}
+                    {isSubmitting ? 'Processing...' : 'Let\'s go!'}
                 </Button>
                 <p className="mt-4 text-sm text-gray-500">
                     We are using your LinkedIn account data to create your personalized AI.
