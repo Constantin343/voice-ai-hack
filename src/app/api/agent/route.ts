@@ -27,12 +27,39 @@ export async function POST(req: NextRequest) {
 
   try {
     // Check subscription status and post count
-    const { canCreatePost, remainingPosts } = await checkUserSubscription(supabase, user.id);
+    const { canCreatePost, remainingPosts, isSubscribed } = await checkUserSubscription(supabase, user.id);
+    
     if (!canCreatePost) {
       return NextResponse.json(
         { error: 'Free tier limit reached. Please upgrade to continue.' },
         { status: 403 }
       );
+    }
+
+    // Add warning when approaching limit
+    if (remainingPosts <= 3 && !isSubscribed) {
+      const client = new Retell({
+        apiKey,
+        fetch: fetch
+      });
+
+      const body = await req.json().catch(() => ({}));
+      let agentId = 'agent_44d9118a49a822e22bfc1c2023';
+      
+      if (body.agent_id) {
+        agentId = body.agent_id;
+      }
+
+      const webCallResponse = await client.call.createWebCall({ 
+        agent_id: agentId 
+      });
+
+      return NextResponse.json({ 
+        warning: 'Free tier limit approaching',
+        remainingPosts,
+        accessToken: webCallResponse.access_token,
+        callId: webCallResponse.call_id 
+      }, { status: 403 });
     }
 
     const client = new Retell({

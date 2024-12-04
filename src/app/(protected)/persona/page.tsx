@@ -23,18 +23,34 @@ export default function SurveyPage() {
   })
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setUserData(user)
+        
+        // Fetch existing persona
+        const { data: persona } = await supabase
+          .from('user_personas')
+          .select()
+          .single()
+        
+        if (persona) {
+          setFormData({
+            introduction: persona.introduction || '',
+            uniqueness: persona.uniqueness || '',
+            audience: persona.audience || '',
+            value_proposition: persona.value_proposition || '',
+            style: persona.style || '',
+            goals: persona.goals || ''
+          })
+        }
       }
     }
-    fetchUser()
+    fetchData()
   }, [supabase.auth])
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    const supabase = createClient()
     
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -43,48 +59,18 @@ export default function SurveyPage() {
         throw new Error('Not authenticated')
       }
 
-      // First check if a persona exists for this user
-      const { data: existingPersona } = await supabase
-        .from('personas')
-        .select()
-        .eq('user_id', user.id)
-        .single()
+      // Upsert persona data
+      const { error: personaError } = await supabase
+        .from('user_personas')
+        .upsert({
+          user_id: user.id,
+          ...formData,
+          updated_at: new Date().toISOString()
+        })
 
-      let error;
-      
-      if (!existingPersona) {
-        // Insert new persona
-        const { error: insertError } = await supabase
-          .from('personas')
-          .insert({
-            user_id: user.id,
-            introduction: formData.introduction,
-            uniqueness: formData.uniqueness,
-            audience: formData.audience,
-            value_proposition: formData.value_proposition,
-            style: formData.style,
-            goals: formData.goals
-          })
-        error = insertError
-      } else {
-        // Update existing persona
-        const { error: updateError } = await supabase
-          .from('personas')
-          .update({
-            introduction: formData.introduction,
-            uniqueness: formData.uniqueness,
-            audience: formData.audience,
-            value_proposition: formData.value_proposition,
-            style: formData.style,
-            goals: formData.goals
-          })
-          .eq('user_id', user.id)
-        error = updateError
-      }
+      if (personaError) throw personaError
 
-      if (error) throw error
-
-      // Update the LLM with the new persona information
+      // Update the LLM
       const response = await fetch('/api/agent/update-persona', {
         method: 'POST',
         headers: {
@@ -100,7 +86,7 @@ export default function SurveyPage() {
       router.push('/knowledgebase')
     } catch (error) {
       console.error('Error saving persona:', error)
-      // You might want to show an error message to the user here
+      // Add error handling UI here if needed
     } finally {
       setIsSubmitting(false)
     }
