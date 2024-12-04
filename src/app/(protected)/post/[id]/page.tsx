@@ -50,7 +50,9 @@ export default function PostPage() {
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout>()
   const [lastSavedContent, setLastSavedContent] = useState<{
     x_description?: string,
-    linkedin_description?: string
+    linkedin_description?: string,
+    title?: string,
+    details?: string
   }>({})
 
   useEffect(() => {
@@ -73,7 +75,9 @@ export default function PostPage() {
           setCurrentPost(data)
           setLastSavedContent({
             x_description: data.x_description,
-            linkedin_description: data.linkedin_description
+            linkedin_description: data.linkedin_description,
+            title: data.title,
+            details: data.details
           })
         } else {
           notFound()
@@ -93,8 +97,14 @@ export default function PostPage() {
 
   useEffect(() => {
     const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
-      textarea.style.height = 'auto'
-      textarea.style.height = `${textarea.scrollHeight}px`
+      const currentScrollPos = window.scrollY;
+      textarea.style.height = '1px';
+      const newHeight = textarea.scrollHeight + 4;
+      textarea.style.height = `${newHeight}px`;
+      if (newHeight < 100) {
+        textarea.style.height = '100px';
+      }
+      window.scrollTo(0, currentScrollPos);
     }
 
     const textareas = document.querySelectorAll('textarea')
@@ -102,6 +112,12 @@ export default function PostPage() {
       adjustTextareaHeight(textarea as HTMLTextAreaElement)
       textarea.addEventListener('input', () => adjustTextareaHeight(textarea as HTMLTextAreaElement))
     })
+
+    const handleResize = () => {
+      textareas.forEach(textarea => adjustTextareaHeight(textarea as HTMLTextAreaElement))
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [currentPost?.x_description, currentPost?.linkedin_description])
 
   const handleTextSelection = () => {
@@ -214,15 +230,21 @@ export default function PostPage() {
     }
   }
 
-  const handleTextChange = async (e: React.ChangeEvent<HTMLTextAreaElement>, platform: 'x' | 'linkedin') => {
+  const handleContentChange = async (
+    value: string, 
+    field: 'title' | 'details' | 'x_description' | 'linkedin_description'
+  ) => {
     if (!currentPost) return
     
-    let newText = e.target.value
-    if (platform === 'x' && newText.length > 280) {
+    let newText = value
+    if (field === 'x_description' && newText.length > 280) {
       newText = newText.substring(0, 280)
     }
+    if (field === 'title' && newText.length > 55) {
+      newText = newText.substring(0, 55)
+    }
     
-    if (platform === 'x') {
+    if (field === 'x_description') {
       setCharCount(newText.length)
     }
     
@@ -230,11 +252,10 @@ export default function PostPage() {
       if (!prev) return null
       return {
         ...prev,
-        [platform === 'x' ? 'x_description' : 'linkedin_description']: newText
+        [field]: newText
       }
     })
 
-    // Setup auto-save
     if (autoSaveTimeoutRef.current) {
       clearTimeout(autoSaveTimeoutRef.current)
     }
@@ -248,7 +269,7 @@ export default function PostPage() {
           },
           body: JSON.stringify({
             id: currentPost.id,
-            [platform === 'x' ? 'x_description' : 'linkedin_description']: newText,
+            [field]: newText,
           }),
         })
 
@@ -256,12 +277,17 @@ export default function PostPage() {
         
         setLastSavedContent(prev => ({
           ...prev,
-          [platform === 'x' ? 'x_description' : 'linkedin_description']: newText
+          [field]: newText
         }))
       } catch (error) {
         console.error('Error auto-saving:', error)
       }
-    }, 1000) // Auto-save after 1 second of no typing
+    }, 1000)
+  }
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>, platform: 'x' | 'linkedin') => {
+    const field = platform === 'x' ? 'x_description' : 'linkedin_description'
+    handleContentChange(e.target.value, field)
   }
 
   const copyToClipboard = (text: string) => {
@@ -269,6 +295,22 @@ export default function PostPage() {
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2000);
   }
+
+  useEffect(() => {
+    const adjustTitleHeight = () => {
+      const titleTextarea = document.querySelector('textarea[data-type="title"]') as HTMLTextAreaElement;
+      if (titleTextarea) {
+        // Reset to single line to check if content fits
+        titleTextarea.style.height = '2.4rem';
+        // Only expand if content doesn't fit in one line
+        if (titleTextarea.scrollHeight > titleTextarea.clientHeight) {
+          titleTextarea.style.height = '4.8rem';
+        }
+      }
+    };
+
+    adjustTitleHeight();
+  }, [currentPost?.title]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -279,7 +321,7 @@ export default function PostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-white py-8">
       <ToastProvider>
         {showToast && (
           <Toast className="fixed bottom-4 right-4 w-auto h-auto p-2 bg-black text-white">
@@ -289,83 +331,108 @@ export default function PostPage() {
         <ToastViewport />
 
         <main className="container max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-8 space-y-6">
-              <h1 className="text-2xl font-bold">{currentPost?.title}</h1>
+          <div className="p-8 space-y-6">
+            <div className="relative">
+              <textarea
+                data-type="title"
+                value={currentPost?.title}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\n/g, '');
+                  handleContentChange(value, 'title');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                  }
+                }}
+                className="text-2xl font-bold w-full resize-none focus:outline-none focus:bg-gray-50 rounded pl-0 overflow-hidden"
+                style={{ height: '2.4rem' }}
+                placeholder="Enter title..."
+                rows={1}
+                maxLength={55}
+              />
+            </div>
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-bold">Description</h2>
+                <div className="border-b border-gray-200 w-full mb-4"></div>
+                <textarea
+                  value={currentPost?.details}
+                  onChange={(e) => handleContentChange(e.target.value, 'details')}
+                  className="w-full p-4 resize-none focus:outline-none focus:bg-gray-50 overflow-hidden"
+                  placeholder="Enter description..."
+                  rows={4}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement
+                    target.style.height = 'auto'
+                    target.style.height = target.scrollHeight + 'px'
+                  }}
+                />
+              </div>
 
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-bold mb-4">Description</h2>
-                  <div 
-                    className="p-4 rounded-lg border border-gray-200"
-                    contentEditable={false}
-                  >
-                    {currentPost?.details}
+              <div>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold">X Post</h2>
+                  <div className="flex gap-2">
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-md"
+                      onClick={() => copyToClipboard(currentPost?.x_description || '')}
+                    >
+                      <Copy className="h-5 w-5 text-gray-600" />
+                    </button>
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-md"
+                      onClick={() => handleShare('x')}
+                    >
+                      <Share2 className="h-5 w-5 text-gray-600" />
+                    </button>
                   </div>
                 </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">X Post</h2>
-                    <div className="flex gap-2">
-                      <button 
-                        className="p-2 hover:bg-gray-100 rounded-md"
-                        onClick={() => copyToClipboard(currentPost?.x_description || '')}
-                      >
-                        <Copy className="h-5 w-5 text-gray-600" />
-                      </button>
-                      <button 
-                        className="p-2 hover:bg-gray-100 rounded-md"
-                        onClick={() => handleShare('x')}
-                      >
-                        <Share2 className="h-5 w-5 text-gray-600" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <textarea
-                      data-platform="x"
-                      value={currentPost?.x_description || ''}
-                      onChange={(e) => handleTextChange(e, 'x')}
-                      onSelect={handleTextSelection}
-                      className="w-full p-4 rounded-lg border border-gray-200 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden"
-                      placeholder="Write your X post..."
-                      rows={1}
-                    />
-                    <div className="absolute bottom-2 right-2 text-sm text-gray-500">
-                      {charCount}/280
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">LinkedIn Post</h2>
-                    <div className="flex gap-2">
-                      <button 
-                        className="p-2 hover:bg-gray-100 rounded-md"
-                        onClick={() => copyToClipboard(currentPost?.linkedin_description || '')}
-                      >
-                        <Copy className="h-5 w-5 text-gray-600" />
-                      </button>
-                      <button 
-                        className="p-2 hover:bg-gray-100 rounded-md"
-                        onClick={() => handleShare('linkedin')}
-                      >
-                        <Share2 className="h-5 w-5 text-gray-600" />
-                      </button>
-                    </div>
-                  </div>
+                <div className="border-b border-gray-200 w-full mb-4"></div>
+                <div className="relative">
                   <textarea
-                    data-platform="linkedin"
-                    value={currentPost?.linkedin_description || ''}
-                    onChange={(e) => handleTextChange(e, 'linkedin')}
+                    data-platform="x"
+                    value={currentPost?.x_description || ''}
+                    onChange={(e) => handleTextChange(e, 'x')}
                     onSelect={handleTextSelection}
-                    className="w-full p-4 rounded-lg border border-gray-200 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden"
-                    placeholder="Write your LinkedIn post..."
+                    className="w-full p-4 resize-none focus:outline-none focus:bg-gray-50 overflow-hidden"
+                    placeholder="Write your X post..."
                     rows={1}
                   />
+                  <div className="absolute bottom-2 right-2 text-sm text-gray-500">
+                    {charCount}/280
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl font-bold">LinkedIn Post</h2>
+                  <div className="flex gap-2">
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-md"
+                      onClick={() => copyToClipboard(currentPost?.linkedin_description || '')}
+                    >
+                      <Copy className="h-5 w-5 text-gray-600" />
+                    </button>
+                    <button 
+                      className="p-2 hover:bg-gray-100 rounded-md"
+                      onClick={() => handleShare('linkedin')}
+                    >
+                      <Share2 className="h-5 w-5 text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+                <div className="border-b border-gray-200 w-full mb-4"></div>
+                <textarea
+                  data-platform="linkedin"
+                  value={currentPost?.linkedin_description || ''}
+                  onChange={(e) => handleTextChange(e, 'linkedin')}
+                  onSelect={handleTextSelection}
+                  className="w-full p-4 resize-none focus:outline-none focus:bg-gray-50 overflow-hidden"
+                  placeholder="Write your LinkedIn post..."
+                  rows={1}
+                />
               </div>
             </div>
           </div>

@@ -46,8 +46,6 @@ CRITICAL RESPONSE FORMAT:
 - NO explanations, NO metadata, NO quotes
 - NO descriptions of what you changed
 - JUST the new text itself
-- Must be ${selectedText.length} characters or less
-- Must preserve any emojis from the original text
 - Must feel complete and natural, not abruptly cut off
 - For bullet points, use actual bullet points (•) followed by a space
 - Each bullet point should be on a new line
@@ -83,14 +81,8 @@ YOUR RESPONSE SHOULD PRESERVE THE EXACT FORMATTING OF THE ORIGINAL TEXT.`;
             // Clean up any whitespace while preserving intentional line breaks
             .split('\n').map((line: string) => line.trim()).join('\n');
 
-        // For X posts, ensure the regenerated text isn't longer than the original selection
+        // Check total post length for X posts
         if (platform === 'x') {
-            if (cleanedResponse.length > selectedText.length) {
-                // Truncate to the same length as the original selection
-                cleanedResponse = cleanedResponse.substring(0, selectedText.length);
-            }
-            
-            // Double-check total post length
             const newTotalLength = fullText.length - selectedText.length + cleanedResponse.length;
             if (newTotalLength > 280) {
                 return NextResponse.json({ 

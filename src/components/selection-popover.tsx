@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Textarea } from "@/components/ui/textarea"
 import { X } from 'lucide-react'
 
@@ -18,6 +18,18 @@ export function SelectionPopover({
   const [instruction, setInstruction] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [onClose])
 
   const handleRegenerate = async () => {
     if (!instruction) return
@@ -70,7 +82,7 @@ export function SelectionPopover({
           animation: shadowPulse 3s ease-in-out infinite;
         }
       `}</style>
-      <div className="bg-white w-full max-w-3xl mx-auto animate-shadow">
+      <div ref={popoverRef} className="bg-white w-full max-w-3xl mx-auto animate-shadow rounded-xl">
         <div className="relative p-6">
           {/* Close button - always in top right */}
           <button 
@@ -82,7 +94,7 @@ export function SelectionPopover({
 
           {/* Selected text */}
           <div className="text-gray-600 mb-4 pr-8">
-            Selected text: <span className="text-gray-900">"{selectedText}"</span>
+            Selected text: <div className="text-gray-900 mt-1 max-h-[10em] overflow-y-auto whitespace-pre-wrap scrollbar-thin">{selectedText}</div>
           </div>
 
           {/* Input field */}
