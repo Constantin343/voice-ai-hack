@@ -67,11 +67,11 @@ export default function Home() {
   }, [agentId, setAgentId]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-[#FFFBF0]">
+    <div className="fixed inset-0 bg-white dark:bg-black text-black dark:text-[#FFFBF0]">
       <Suspense fallback={null}>
         <SubscriptionStatus />
       </Suspense>
-      <div className="relative h-screen flex flex-col items-center justify-between p-8 pb-20">
+      <div className="h-full flex flex-col items-center justify-between p-8 pb-20">
         <div className="flex-1 flex items-center justify-center w-full">
           <div 
             className="flex items-center justify-center cursor-pointer"

@@ -112,7 +112,6 @@ export default function KnowledgePage() {
                   </div>
                 )}
               </div>
-              
               <div className="space-y-4">
                 <h1 className="text-3xl font-bold">{userData?.user_metadata?.name || 'User'}</h1>
                 <p className="text-lg text-blue-200">{userData?.user_metadata?.headline || 'Professional'}</p>

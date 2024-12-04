@@ -22,7 +22,7 @@ export function ShareTwitter({ isOpen, onClose }: ShareTwitterProps) {
             Tips for maximizing your tweet's reach
           </DialogDescription>
         </DialogHeader>
-        <div className="prose prose-sm max-w-none mt-4 space-y-2 text-muted-foreground">
+        <div className="prose prose-sm max-w-none mt-4 space-y-2">
           <ul className="list-disc pl-4 space-y-1">
           <li>Warm up engagement 10 minutes before posting by interacting with your feed</li>
           <li>Stay active 10-15 minutes after posting to boost initial momentum</li>

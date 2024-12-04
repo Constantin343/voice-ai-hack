@@ -5,14 +5,19 @@ export default async function request_Anthropic(prompt: string) : Promise<any> {
         apiKey: process.env["ANTHROPIC_API_KEY"]
     });
 
-    const msg= await anthropic.messages.create({
+    const msg = await anthropic.messages.create({
         model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
+        max_tokens: 4096,
+        messages: [{ 
+            role: "user", 
+            content: prompt 
+        }],
+        temperature: 0.7,
+        system: "You are a professional copywriter. Always return responses in valid JSON format when asked. Never truncate or shorten the response. Complete all sections fully."
     });
 
+    console.log('Anthropic API response:', msg.content);
     return (msg.content[0] as any).text;
-
 }
 
 export async function getPostTitleAndContent(thoughts: string, memory: string): Promise<any> {
@@ -31,7 +36,7 @@ First, you will be given the thoughts and memory. Then, you will craft a title a
 Create a succinct, engaging, and short title for the post. Keep these tips in mind:
 - Clarity is Key: Avoid vague or overly abstract titles. Ensure the audience immediately understands the topic.
 - Make It Intriguing: Use power words or pose a question that resonates with your audience.
-- Keep It Concise: The title should be no longer than 10-12 words, with the most important words appearing early.
+- Keep It Concise: The title should be no longer than 55 characters, with the most important words appearing early.
 - Target Your Audience: Tailor the language and tone of the title to the software development or technical community.
 
 Example titles:
