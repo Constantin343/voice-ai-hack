@@ -16,7 +16,7 @@ export default function RequestLinkedinScreen({
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            await onLinkedInSubmit(linkedInURL);
+            onLinkedInSubmit(linkedInURL);
         } catch (error) {
             console.error('Error during LinkedIn submission:', error);
             alert('An error occurred while submitting your LinkedIn profile. Please try again.');

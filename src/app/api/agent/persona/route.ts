@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Retell from 'retell-sdk';
 import { createClient } from "@/utils/supabase/server";
+import {refinePersonaFromTranscript} from "@/lib/anthropic";
 
 export const maxDuration = 30;
 
@@ -48,8 +49,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // @Sergiu here we have to call the anthropic function to extract the persona information with the transcript as additional context and save it to the database
-    // await extractPersonaFromTranscript(transcript);
+    const persona = await refinePersonaFromTranscript(transcript);
+
+    const {error: upsertError} = await supabase
+        .from('user_personas')
+        .upsert({
+          user_id: user.id,
+          introduction: persona?.introduction,
+          uniqueness: persona?.uniqueness,
+          audience: persona?.audience,
+          value_proposition: persona?.value_proposition,
+          style: persona?.style,
+          goals: persona?.goals
+        }, {
+          onConflict: 'user_id',
+        });
+    if (upsertError) {
+      throw new Error(`Failed to store the refined persona: ${upsertError.message}`);
+    }
 
     return NextResponse.json({ 
       success: true
