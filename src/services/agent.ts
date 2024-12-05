@@ -107,10 +107,10 @@ export async function createAgent(params: CreateAgentParams) {
     }
 }
 
-export async function createLLM() {
+export async function createLLM(userName?: string) {
     console.log("Creating LLM");
     const llmResponse = await client.llm.create({
-        general_prompt: DEFAULT_PROMPT
+        general_prompt: `${DEFAULT_PROMPT}\n\nUser's first name if available: ${userName || ''}`
     });
     console.log("LLM created:", llmResponse);
     return {
