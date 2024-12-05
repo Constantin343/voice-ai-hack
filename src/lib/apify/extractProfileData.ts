@@ -61,8 +61,8 @@ export async function extractProfileData(linkedinProfileUrl: string): Promise<Pe
         const input = {
             urls: [linkedinProfileUrl],
             cookie,
-            minDelay: 3,
-            maxDelay: 7,
+            minDelay: 5,
+            maxDelay: 30,
             proxy: {
                 useApifyProxy: true,
                 apifyProxyCountry: "US",
