@@ -5,22 +5,15 @@ import { handleUserAgentConnection } from '@/utils/supabase/user-management'
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
-    const stateParam = searchParams.get('state')
+    const isRegistration = searchParams.get('registration') === 'true'
+    const inviteCode = searchParams.get('invite')
     
-    let state = {
-        isRegistration: false,
-        inviteCode: ''
-    }
-    
-    try {
-        if (stateParam) {
-            state = JSON.parse(stateParam)
-        }
-    } catch (e) {
-        console.error('Error parsing state:', e, 'Raw state:', stateParam)
-    }
-    
-    console.log('Callback received:', { code, state, rawState: stateParam }) // Enhanced debug log
+    console.log('Callback received:', { 
+        code, 
+        isRegistration, 
+        inviteCode,
+        allParams: Object.fromEntries(searchParams.entries())
+    })
     
     if (code) {
         const supabase = await createClient()
@@ -31,7 +24,7 @@ export async function GET(request: Request) {
             const { data: { user } } = await supabase.auth.getUser()
             
             if (user) {
-                console.log('User authenticated:', { userId: user.id, metadata: user.user_metadata }) // Debug log
+                console.log('User authenticated:', { userId: user.id, metadata: user.user_metadata })
 
                 // Check if user exists in your users table
                 const { data: existingUser } = await supabase
@@ -42,13 +35,13 @@ export async function GET(request: Request) {
 
                 if (!existingUser) {
                     // This is a new user
-                    if (!state.isRegistration || state.inviteCode !== 'EARLY-ACCESS-2024') {
-                        console.log('Registration validation failed:', state) // Debug log
+                    if (!isRegistration || inviteCode !== 'EARLY-ACCESS-2024') {
+                        console.log('Registration validation failed:', { isRegistration, inviteCode })
                         await supabase.auth.signOut()
                         return NextResponse.redirect(`${origin}/login?error=not_registered`)
                     }
 
-                    console.log('Creating new user in database') // Debug log
+                    console.log('Creating new user in database')
 
                     // Create the user in the database
                     const { error: insertError } = await supabase
@@ -61,7 +54,7 @@ export async function GET(request: Request) {
                                 avatar_url: user.user_metadata.avatar_url,
                                 created_at: new Date().toISOString(),
                                 updated_at: new Date().toISOString(),
-                                linkedin_id: user.user_metadata.sub, // LinkedIn's unique identifier
+                                linkedin_id: user.user_metadata.sub,
                                 is_onboarded: false
                             }
                         ])

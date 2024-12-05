@@ -54,17 +54,13 @@ export async function signInWithLinkedIn(formData: FormData) {
 
     console.log('Starting OAuth flow with:', { inviteCode })
 
-    const stateObj = {
-        isRegistration: Boolean(inviteCode),
-        inviteCode: inviteCode || ''
-    }
-    
-    // Properly encode the state
-    const encodedState = encodeURIComponent(JSON.stringify(stateObj))
-    
+    // Create a unique registration URL with the invite code
+    const registrationCallbackUrl = inviteCode 
+        ? `${origin}/auth/callback?registration=true&invite=${inviteCode}`
+        : `${origin}/auth/callback`
+
     const options: any = {
-        redirectTo: `${origin}/auth/callback`,
-        state: encodedState
+        redirectTo: registrationCallbackUrl
     }
 
     console.log('Options:', options)
