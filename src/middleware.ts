@@ -23,5 +23,3 @@ export const config = {
         '/api/agent/:path*'
     ],
 }
-
-
