@@ -5,6 +5,7 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import {useMemo} from "react";
 import {createClient} from "@/utils/supabase/server";
 import OnboardingScreen from "@/components/onboarding/onboarding-screen";
+import {redirect} from "next/navigation";
 
 export default async function ProtectedLayout({
   children,
@@ -16,6 +17,9 @@ export default async function ProtectedLayout({
   }, []);
   const authUser = useMemo(async () => {
     const { data: { user } } = await (await supabase).auth.getUser()
+    if (!user) {
+      redirect('/login')
+    }
     return user
   }, []);
   const isUserOnboarded = useMemo(async () => {
@@ -26,7 +30,6 @@ export default async function ProtectedLayout({
         .single();
     return user && user.is_onboarded;
   }, []);
-
 
   return await isUserOnboarded ? (
     <SidebarProvider>
