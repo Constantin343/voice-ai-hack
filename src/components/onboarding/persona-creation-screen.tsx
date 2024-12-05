@@ -45,29 +45,46 @@ export default function PersonaCreationScreen({ onNext }: { onNext: () => void }
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-full max-w-2xl mx-auto px-4">
-            <h2 className="text-2xl font-semibold mb-6">Let's Get to Know You</h2>
-            
-            {!isSpeaking && (
-                <div className="w-full text-center mb-8">
-                    <p className="text-muted-foreground">
-                        Our AI assistant will ask you a few questions to understand your needs better.
-                        Click the icon below to start the conversation.
-                    </p>
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="flex flex-col items-center max-w-2xl mx-auto px-4 py-12">
+                <h2 className="text-2xl font-semibold mb-6">Let's Get to Know You</h2>
+                
+                {!isSpeaking && (
+                    <div className="w-full text-center mb-8">
+                        <p className="text-muted-foreground">
+                            Our AI assistant will ask you a few questions to understand your needs better.
+                            Click the icon below to start the conversation.
+                        </p>
+                    </div>
+                )}
+
+                <div>
+                    <OnboardingAgent 
+                        isSpeaking={isSpeaking}
+                        onboardingAgentId={onboardingAgentId}
+                        onProcessed={handleProcessed}
+                        onClick={() => handleIsSpeaking(!isSpeaking)}
+                    />
                 </div>
-            )}
 
-            <div 
-                onClick={() => handleIsSpeaking(!isSpeaking)}
-                className="cursor-pointer"
-            >
-                <OnboardingAgent 
-                    isSpeaking={isSpeaking}
-                    onboardingAgentId={onboardingAgentId}
-                    onProcessed={handleProcessed}
-                />
+                <div className="mt-8 z-10">
+                    {isSpeaking ? (
+                        <button
+                            onClick={() => handleIsSpeaking(false)}
+                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            End Conversation
+                        </button>
+                    ) : (
+                        <button
+                            onClick={onNext}
+                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            Skip for now
+                        </button>
+                    )}
+                </div>
             </div>
-
         </div>
     );
 }
