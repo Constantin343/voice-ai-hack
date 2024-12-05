@@ -32,4 +32,4 @@ export async function updateKnowledgeBase(transcript: string, userId: string) {
     } catch (error) {
         console.error('Error updating knowledge base:', error);
     }
-} 
+}
