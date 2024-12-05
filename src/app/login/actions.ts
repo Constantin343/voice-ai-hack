@@ -52,8 +52,6 @@ export async function signInWithLinkedIn(formData: FormData) {
     const origin = (await headers()).get('origin')
     const inviteCode = formData.get('inviteCode')?.toString()
 
-    console.log('Starting OAuth flow with:', { inviteCode })
-
     // Create a unique registration URL with the invite code
     const registrationCallbackUrl = inviteCode 
         ? `${origin}/auth/callback?registration=true&invite=${inviteCode}`

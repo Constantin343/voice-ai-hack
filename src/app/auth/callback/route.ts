@@ -24,7 +24,6 @@ export async function GET(request: Request) {
             const { data: { user } } = await supabase.auth.getUser()
             
             if (user) {
-                console.log('User authenticated:', { userId: user.id, metadata: user.user_metadata })
 
                 // Check if user exists in your users table
                 const { data: existingUser } = await supabase
@@ -35,7 +34,7 @@ export async function GET(request: Request) {
 
                 if (!existingUser) {
                     // This is a new user
-                    if (!isRegistration || inviteCode !== 'EARLY-ACCESS-2024') {
+                    if (!isRegistration || inviteCode !== process.env.INVITE_CODE) {
                         console.log('Registration validation failed:', { isRegistration, inviteCode })
                         await supabase.auth.signOut()
                         return NextResponse.redirect(`${origin}/login?error=not_registered`)
