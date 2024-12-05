@@ -19,6 +19,7 @@ export interface PersonaFormProps {
     submitLabel?: string;
     isSubmitting?: boolean;
     readOnly?: boolean;
+    showSuccessMessage?: boolean;
 }
 
 export function PersonaField({ 
@@ -82,17 +83,20 @@ export default function PersonaForm({
     onSubmit, 
     submitLabel = "Save Changes",
     isSubmitting = false,
-    readOnly = false
+    readOnly = false,
+    showSuccessMessage = false
 }: PersonaFormProps) {
     return (
         <div className="space-y-8">
-            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-800">You did it!</h2>
-                <p className="text-gray-600 mt-2">
-                    Your persona is now complete and will guide your journey with our platform.
-                    Don't worry, you can always make changes to your persona in the knowledge base area later.
-                </p>
-            </div>
+            {showSuccessMessage && (
+                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+                    <h2 className="text-xl font-semibold text-gray-800">You did it!</h2>
+                    <p className="text-gray-600 mt-2">
+                        Your persona is now complete and will guide your journey with our platform.
+                        Don't worry, you can always make changes to your persona in the knowledge base area later.
+                    </p>
+                </div>
+            )}
 
             <div className="space-y-8">
                 <PersonaField

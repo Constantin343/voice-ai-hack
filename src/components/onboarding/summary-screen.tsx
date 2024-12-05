@@ -161,6 +161,7 @@ export default function SummaryScreen({ onNext }: { onNext: () => void }) {
                     onSubmit={handleSubmit}
                     submitLabel="Finish Onboarding"
                     isSubmitting={isSubmitting}
+                    showSuccessMessage={true}
                 />
             </div>
         </div>

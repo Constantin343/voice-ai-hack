@@ -101,10 +101,10 @@ export default function PersonaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 md:p-12 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-black to-black">
+    <div className="min-h-screen bg-gray-50 p-6 md:p-12">
       <div className="max-w-3xl mx-auto space-y-16">
         {/* Header */}
-        <header className="flex items-center gap-4 border-b border-blue-500/30 pb-6">
+        <header className="flex items-center gap-4 border-b border-gray-200 pb-6">
           <div className="w-12 h-12">
             {userData?.user_metadata?.picture ? (
               <img 
@@ -120,16 +120,16 @@ export default function PersonaPage() {
               </div>
             )}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
             {userData?.user_metadata?.name} 
           </h1>
         </header>
 
         {isSubmitting && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white/10 border border-white/20 p-6 rounded-lg shadow-lg flex items-center gap-4">
+          <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-4">
               <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-              <p className="text-white">Saving your persona...</p>
+              <p className="text-gray-800">Saving your persona...</p>
             </div>
           </div>
         )}
@@ -144,7 +144,7 @@ export default function PersonaPage() {
         {/* Back Button */}
         <Button
           onClick={() => window.location.href = '/knowledgebase'}
-          className="mb-2 flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+          className="mb-2 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
           variant="ghost"
         >
           <ArrowLeft className="w-4 h-4" />
