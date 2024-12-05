@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const messages = [
-    'Scraping your linkedin information',
+    'Looking at your LinkedIn profile',
     'Processing the information',
     'Crafting your first persona',
     'Identifying missing information',
