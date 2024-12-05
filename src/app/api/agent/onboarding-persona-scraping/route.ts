@@ -5,7 +5,7 @@ import {extractPostData} from "@/lib/apify/extractPostData";
 import {extractPersonaFromScrapedLinkedinProfile} from "@/lib/anthropic";
 import {createOnboardingAgent} from "@/services/agent";
 
-
+export const maxDuration = 60;
 export async function POST(req: NextRequest) {
     const supabase = await createClient();
     try {
