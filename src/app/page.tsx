@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, Brain, Zap, Fingerprint, Mic, BarChart3 } from 'lucide-react'
 import Script from 'next/script'
 import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
+import {redirect, useRouter} from 'next/navigation'
 
 export default function LandingPage() {
   const textRef = useRef<HTMLParagraphElement>(null)
@@ -24,6 +24,12 @@ export default function LandingPage() {
     
     checkAuth()
   }, [])
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      //redirect('/home');
+    }
+  }, [isLoggedIn])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -102,7 +108,7 @@ export default function LandingPage() {
             className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
             onClick={handleGetStarted}
           >
-            get started <ArrowRight className="ml-2" />
+            JOIN WAITLIST <ArrowRight className="ml-2" />
           </Button>
         </div>
       </section>
@@ -192,7 +198,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing
       <section className="bg-gray-100 py-20">
         <div className="container mx-auto text-center px-6 sm:px-8 md:px-12">
           <h2 className="text-4xl font-bold mb-12 lowercase">start free, upgrade later</h2>
@@ -242,6 +248,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      */}
 
       {/* Founders Section */}
       <section className="py-20 bg-black text-white">
@@ -327,16 +334,16 @@ export default function LandingPage() {
         <div className="container mx-auto text-center">
           <h2 className="text-4xl font-bold mb-8 lowercase">stop building in silence</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Let your ideas reach the audience they deserve. 
+            Let your ideas reach the audience they deserve.
             <br />
             Start growing your influence today.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-[#2d12e9] hover:bg-[#2d12e9]/90"
             onClick={handleGetStarted}
           >
-            try publyc now <ArrowRight className="ml-2" />
+            JOIN WAITLIST NOW <ArrowRight className="ml-2" />
           </Button>
         </div>
       </section>
