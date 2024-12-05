@@ -60,6 +60,8 @@ export async function POST(req: NextRequest) {
             })
             .eq('user_id', user.id);
 
+        // TODO: Update agent with persona
+
         if (updateError) {
             throw new Error(`Failed to update persona in Supabase: ${updateError.message}`);
         }
