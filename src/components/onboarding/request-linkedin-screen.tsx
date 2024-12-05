@@ -26,6 +26,12 @@ export default function RequestLinkedinScreen({
         }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter' && !isSubmitting) {
+            handleSubmit();
+        }
+    };
+
     return (
         <div className="flex flex-col items-center justify-center h-screen px-4 bg-gradient-to-br from-blue-50 to-white">
             {/* Logo Section */}
@@ -52,6 +58,7 @@ export default function RequestLinkedinScreen({
                     type="text"
                     value={linkedInURL}
                     onChange={(e) => setLinkedInURL(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     className="w-full p-3 border border-gray-300 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2d12e9] focus:border-transparent"
                     disabled={isSubmitting}
                 />

@@ -39,7 +39,7 @@ export async function extractPostData(postUrls: string[]): Promise<PostData[] | 
                 apifyProxyCountry: 'US',
             },
         };
-        const ACTOR_ID = 'kfiWbq3boy3dWKbiL';
+        const ACTOR_ID = process.env.APIFY_POSTS_EXTRACTOR_ACTOR_ID!;
 
         // Run the Actor and wait for it to finish
         const run = await client.actor(ACTOR_ID).call(input);

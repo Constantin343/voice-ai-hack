@@ -52,7 +52,7 @@ type PersonProfile = {
 };
 
 const client = new ApifyClient({
-    token: process.env.APIFY_API_KEY, // Replace with your environment variable or a key
+    token: process.env.APIFY_API_KEY,
 });
 
 export async function extractProfileData(linkedinProfileUrl: string): Promise<PersonProfile | null> {
