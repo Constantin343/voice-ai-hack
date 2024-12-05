@@ -208,17 +208,20 @@ export async function deleteOnboardingAgent(userId: string) {
         await client.llm.delete(data.onboarding_llm_id);
     }
 
-    // Remove the database record
-    const { error: deleteError } = await supabase
+    // Update the database record instead of deleting it
+    const { error: updateError } = await supabase
         .from('user_agent')
-        .delete()
+        .update({
+            onboarding_agent_id: null,
+            onboarding_llm_id: null
+        })
         .eq('user_id', userId);
 
-    if (deleteError) {
-        console.error("Error deleting database record:", deleteError);
-        throw deleteError;
+    if (updateError) {
+        console.error("Error updating database record:", updateError);
+        throw updateError;
     }
 
-    console.log("Successfully deleted onboarding agent and associated resources");
+    console.log("Successfully deleted onboarding agent and nullified associated fields");
 }
 
