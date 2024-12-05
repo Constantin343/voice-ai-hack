@@ -1,9 +1,14 @@
 // In LoginPage.jsx
+'use client'
 import { Button } from '@/components/ui/button'
 import { Linkedin } from 'lucide-react'
 import { signInWithLinkedIn } from './actions'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
+    const searchParams = useSearchParams()
+    const error = searchParams.get('error')
+
     return (
         <div className="container mx-auto flex flex-col items-center justify-center min-h-screen">
             {/* Logo and Brand Section - Made Larger */}
@@ -33,6 +38,12 @@ export default function LoginPage() {
             {/* Login Box */}
             <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8 space-y-6">
                 <h1 className="text-center text-3xl font-bold">Sign in to your account</h1>
+
+                {error === 'not_registered' && (
+                    <div className="p-4 text-sm text-red-800 bg-red-100 rounded-lg">
+                        Account not found. Please register first to use our service.
+                    </div>
+                )}
 
                 {/* LinkedIn Login Button */}
                 <form action={signInWithLinkedIn} method="POST" className="w-full">
