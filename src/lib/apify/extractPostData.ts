@@ -32,8 +32,8 @@ export async function extractPostData(postUrls: string[]): Promise<PostData[] | 
             cookie,
             deepScrape: true,
             rawData: false,
-            minDelay: 5,
-            maxDelay: 11,
+            minDelay: 2,
+            maxDelay: 4,
             proxy: {
                 useApifyProxy: true,
                 apifyProxyCountry: 'US',
