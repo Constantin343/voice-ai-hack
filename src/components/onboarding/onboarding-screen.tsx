@@ -76,14 +76,9 @@ export default function OnboardingScreen() {
                     }
                 });
             })
-            .then(() => {
-                // Success message
-                alert('LinkedIn scraping completed successfully!');
-            })
             .catch((error) => {
                 // Error handling
                 console.error('Error during LinkedIn scraping:', error);
-                alert(`An error occurred: ${error.message}`);
             });
     };
     const handleOnboardingCompletion = async () => {

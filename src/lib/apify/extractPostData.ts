@@ -30,10 +30,11 @@ export async function extractPostData(postUrls: string[]): Promise<PostData[] | 
         const input = {
             urls: [postUrls],
             cookie,
+            limitPerSource: 10,
             deepScrape: true,
             rawData: false,
-            minDelay: 2,
-            maxDelay: 4,
+            minDelay: 5,
+            maxDelay: 30,
             proxy: {
                 useApifyProxy: true,
                 apifyProxyCountry: 'US',

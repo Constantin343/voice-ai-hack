@@ -25,7 +25,25 @@ export async function handleUserAgentConnection(
     if (!existingConnection || !existingConnection.agent_id) {
         console.log("Creating new agent - no existing connection or missing agent_id")
         try {
-            const { llm_id } = await createLLM()
+            // Fetch user's full name
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('full_name')
+                .eq('id', userId)
+                .single()
+
+            if (userError) {
+                console.error('Error fetching user data:', userError)
+            }
+
+            // Safely extract first name from full name
+            let firstName = ''
+            if (userData?.full_name) {
+                const nameParts = userData.full_name.trim().split(/\s+/)
+                firstName = nameParts[0] || ''
+            }
+
+            const { llm_id } = await createLLM(firstName)
             const { agent_id } = await createAgent({
                 name: userId,
                 llm_id: llm_id
