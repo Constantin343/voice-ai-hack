@@ -32,6 +32,9 @@ export async function POST(req: NextRequest) {
         const prompt = `
 You are a professional copywriter tasked with improving a specific section of a social media post.
 
+# Post Topic Description for more context:
+${post.details}
+
 # Current ${platform.toUpperCase()} Post:
 ${fullText}
 
