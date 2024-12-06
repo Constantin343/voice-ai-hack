@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+    images: {
+        // Configure external image domains
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "gkdjaaitkcaphgqdhevy.supabase.co",
+                pathname: "/storage/v1/object/public/web_assets/**",
+            },
+        ],
+    },
     webpack: (config) => {
         // Add fallbacks for crypto and stream if using them in server-side packages
         config.resolve.fallback = {
