@@ -11,12 +11,14 @@ interface OnboardingAgentProps {
   isSpeaking: boolean;
   onboardingAgentId: string;
   onProcessed: () => void;
+  onClick: () => void;
 }
 
 export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({ 
   isSpeaking,
   onboardingAgentId,
-  onProcessed 
+  onProcessed,
+  onClick
 }) => {
   const retellClientRef = useRef<RetellWebClient | null>(null);
   const [devices, setDevices] = useState<{ audio: MediaDeviceInfo[] }>({ audio: [] });
@@ -216,7 +218,10 @@ export const OnboardingAgent: React.FC<OnboardingAgentProps> = ({
   }, [token, devices.audio, isSpeaking, callId, onProcessed]);
 
   return (
-    <div className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center">
+    <div 
+      className="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center"
+      onClick={onClick}
+    >
       {isProcessing && (
         <div className="absolute inset-0 flex items-center justify-center rounded-full z-10">
           <Loader2 className="h-8 w-8 animate-spin text-white" />

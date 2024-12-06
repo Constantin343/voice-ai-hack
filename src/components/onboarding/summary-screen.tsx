@@ -5,19 +5,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Confetti from "react-confetti";
+import PersonaForm, { PersonaData } from "@/components/persona/PersonaForm"
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export default function SummaryScreen({ onNext }: { onNext: () => void }) {
     const supabase = createClient();
     const [userData, setUserData] = useState<any>(null);
-    const [persona, setPersona] = useState<{
-        introduction: string;
-        uniqueness: string;
-        audience: string;
-        value_proposition: string;
-        style: string;
-        goals: string;
-    } | null>(null);
+    const [persona, setPersona] = useState<PersonaData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
@@ -55,6 +52,56 @@ export default function SummaryScreen({ onNext }: { onNext: () => void }) {
 
         fetchData();
     }, [supabase]);
+
+    const handleSubmit = async () => {
+        if (!persona) return;
+        
+        setIsSubmitting(true);
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                throw new Error('Not authenticated');
+            }
+
+            // Update persona in database
+            const { error: personaError } = await supabase
+                .from('user_personas')
+                .upsert({
+                    user_id: user.id,
+                    ...persona,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (personaError) throw personaError;
+
+            // Update the LLM
+            const response = await fetch('/api/agent/update-persona', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(persona)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update agent persona');
+            }
+
+            onNext();
+        } catch (error) {
+            console.error('Error saving persona:', error);
+            toast.error('Failed to save changes');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleChange = (field: keyof PersonaData, value: string) => {
+        if (persona) {
+            setPersona({ ...persona, [field]: value });
+        }
+    };
 
     if (loading) {
         return (
@@ -95,66 +142,28 @@ export default function SummaryScreen({ onNext }: { onNext: () => void }) {
                         )}
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-                        {userData?.user_metadata?.name}, Congratulations on Creating Your Persona!
+                        {userData?.user_metadata?.name}, Review Your Persona!
                     </h1>
                 </header>
 
-                {/* Success Message */}
-                <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-800">You did it!</h2>
-                    <p className="text-gray-600 mt-2">
-                        Your persona is now complete and will guide your journey with our platform.
-                        Don't worry, you can always make changes to your persona in the knowledge base area later.
-                    </p>
-                </div>
+                {isSubmitting && (
+                    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-4">
+                            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                            <p className="text-gray-800">Saving your persona...</p>
+                        </div>
+                    </div>
+                )}
 
-                {/* Persona Details */}
-                <div className="space-y-16">
-                    <PersonaField
-                        title="Introduction"
-                        value={persona.introduction}
-                    />
-                    <PersonaField
-                        title="Uniqueness"
-                        value={persona.uniqueness}
-                    />
-                    <PersonaField
-                        title="Audience"
-                        value={persona.audience}
-                    />
-                    <PersonaField
-                        title="Value Proposition"
-                        value={persona.value_proposition}
-                    />
-                    <PersonaField
-                        title="Style"
-                        value={persona.style}
-                    />
-                    <PersonaField
-                        title="Goals"
-                        value={persona.goals}
-                    />
-                </div>
-
-                {/* Finish Onboarding Button */}
-                <div className="mt-8">
-                    <Button
-                        onClick={onNext}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-semibold rounded-lg transition-all duration-300 ease-in-out transform hover:scale-105"
-                    >
-                        Finish Onboarding
-                    </Button>
-                </div>
+                <PersonaForm 
+                    persona={persona}
+                    onChange={handleChange}
+                    onSubmit={handleSubmit}
+                    submitLabel="Finish Onboarding"
+                    isSubmitting={isSubmitting}
+                    showSuccessMessage={true}
+                />
             </div>
-        </div>
-    );
-}
-
-function PersonaField({ title, value }: { title: string; value: string }) {
-    return (
-        <div className="space-y-4 bg-white p-6 rounded-lg shadow-md border border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-            <p className="text-gray-600 whitespace-pre-line">{value || "N/A"}</p>
         </div>
     );
 }
