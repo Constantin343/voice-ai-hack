@@ -9,10 +9,12 @@ import Script from 'next/script'
 import {createClient} from '@/utils/supabase/client'
 import {redirect, useRouter} from 'next/navigation'
 import Head from "next/head";
+import HubspotWaitlistForm from "@/components/hubspot-waitlist-form";
 
 export default function LandingPage() {
     const textRef = useRef<HTMLParagraphElement>(null)
     const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
     const router = useRouter()
     const supabase = createClient()
 
@@ -39,12 +41,12 @@ export default function LandingPage() {
     }
 
     const handleGetStarted = () => {
-        if (isLoggedIn) {
-            router.push('/home')
-        } else {
-            router.push('/login')
-        }
-    }
+        setIsPopupOpen(true);
+    };
+
+    const closePopup = () => {
+        setIsPopupOpen(false);
+    };
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -378,6 +380,45 @@ export default function LandingPage() {
                         </Button>
                     </div>
                 </section>
+
+                {/* Popup */}
+                <div
+                    className={`fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-300 ${
+                        isPopupOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+                    }`}
+                >
+                    <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full relative">
+                        {/* Close Button */}
+                        <button
+                            className="absolute top-4 right-6 text-gray-600 hover:text-gray-800"
+                            onClick={closePopup}
+                        >
+                            &times;
+                        </button>
+
+                        {/* Logo and Header */}
+                        <div className="flex flex-col items-center mb-6">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 1200 1200"
+                                className="w-16 h-16 mb-4"
+                                fill="black"
+                            >
+                                <path
+                                    d="M646.5,162.5C773.278,157.843 880.444,200.843 968,291.5C1041.05,375.71 1073.05,473.71 1064,585.5C1058.36,642.076 1038.36,692.743 1004,737.5C955.628,794.176 895.128,813.343 822.5,795C794.495,787.332 766.495,779.666 738.5,772C673.007,758.494 627.173,782.327 601,843.5C591.844,869.079 588.511,895.412 591,922.5C593.386,942.203 596.053,961.869 599,981.5C600.466,994.469 600.799,1007.47 600,1020.5C594.162,1053.85 574.328,1069.01 540.5,1066C524.12,1063.88 509.12,1058.21 495.5,1049C475.549,1035.06 457.382,1018.89 441,1000.5C385,935.167 329,869.833 273,804.5C246.069,773.966 222.069,741.299 201,706.5C145.576,608.242 139.909,507.242 184,403.5C220.058,330.776 274.224,275.942 346.5,239C425.156,200.25 508.156,176.25 595.5,167C612.625,165.159 629.625,163.659 646.5,162.5Z"/>
+                            </svg>
+                            <h1 className="text-lg font-bold text-gray-800 text-center">
+                                get early access
+                            </h1>
+                            <p className="text-sm text-gray-600 text-center pt-2 pl-6 pr-6">
+                                In a world of AI-generated mediocracy, unique human voices matter more than ever.
+                                <br/>
+                                Let's amplify yours.
+                            </p>
+                        </div>
+                        <HubspotWaitlistForm/>
+                    </div>
+                </div>
 
                 {/* Footer */}
                 <footer className="bg-black text-white py-12">
