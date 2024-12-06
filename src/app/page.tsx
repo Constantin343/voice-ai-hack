@@ -349,7 +349,7 @@ export default function LandingPage() {
             <Link href="https://x.com/publyc_app" className="hover:text-[#2d12e9]" target="_blank" rel="noopener noreferrer">twitter</Link>
           </div>
           <div>
-            <Link href="mailto:publyc@mail.com" className="mr-4 hover:text-[#2d12e9]">contact</Link>
+            <Link href="mailto:hello@publyc.app" className="mr-4 hover:text-[#2d12e9]">contact</Link>
             <Link href="/terms.html" className="mr-4 hover:text-[#2d12e9]" target="_blank" rel="noopener noreferrer">terms of service</Link>
             <Link href="/privacy.html" className="hover:text-[#2d12e9]" target="_blank" rel="noopener noreferrer">privacy policy</Link>
           </div>
