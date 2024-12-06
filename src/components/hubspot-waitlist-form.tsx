@@ -24,6 +24,6 @@ export default function HubspotWaitlistForm() {
     }, []);
 
     return (
-        <div id="hubspotForm" className="hubspotForm"></div>
+        <div id="hubspotForm" className="hubspotForm px-4"></div>
     );
 }
