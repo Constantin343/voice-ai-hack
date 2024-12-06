@@ -172,21 +172,21 @@ export default function LandingPage() {
                         <h2 className="text-4xl font-bold mb-12 lowercase">join forward-thinking builders</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="bg-white p-6 rounded-lg shadow flex items-center">
-                                <Image src="/placeholder.svg?height=64&width=64" alt="Jane Doe" width={64} height={64}
+                                <Image src="https://gkdjaaitkcaphgqdhevy.supabase.co/storage/v1/object/public/web_assets/landing_page/NickLinck.jpeg?t=2024-12-06T06%3A33%3A13.841Z" alt="Nick Linck" width={64} height={64}
                                        className="rounded-full mr-4"/>
                                 <div>
                                     <p className="mb-2">"publyc turned my random thoughts into successful posts. What
                                         used to take hours now happens automatically while I build my startup."</p>
-                                    <p className="font-semibold">- Marvin Smith, Tech Entrepreneur</p>
+                                    <p className="font-semibold">- Nick Linck, Founder of The Residency</p>
                                 </div>
                             </div>
                             <div className="bg-white p-6 rounded-lg shadow flex items-center">
-                                <Image src="/placeholder.svg?height=64&width=64" alt="John Smith" width={64} height={64}
+                                <Image src="https://gkdjaaitkcaphgqdhevy.supabase.co/storage/v1/object/public/web_assets/landing_page/ChristopherWolters.jpeg?t=2024-12-06T06%3A37%3A03.000Z" alt="Christopher Wolters" width={64} height={64}
                                        className="rounded-full mr-4"/>
                                 <div>
                                     <p className="mb-2">"publyc keeps my authentic voice while scaling my presence. It's
                                         like having a content team that lives in my brain."</p>
-                                    <p className="font-semibold">- Lukas Meischer, VC Investor</p>
+                                    <p className="font-semibold">- Christopher Wolters, Researcher at Stanford</p>
                                 </div>
                             </div>
                         </div>
