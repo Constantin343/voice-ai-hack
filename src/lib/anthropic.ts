@@ -260,7 +260,7 @@ Please analyze this conversation transcript and extract key knowledge points:
 
 ${transcript}
 
-Format each knowledge point as a JSON object with 'title', 'content', and 'category' fields.
+Format each knowledge point as a JSON object with 'title', 'content' fields.
 Focus on extracting factual, reusable information that would be valuable for future reference.`;
 
     try {
@@ -285,13 +285,9 @@ Focus on extracting factual, reusable information that would be valuable for fut
                                     "content": {
                                         "type": "string",
                                         "description": "The extracted knowledge content"
-                                    },
-                                    "category": {
-                                        "type": "string",
-                                        "description": "Category of the knowledge point"
                                     }
                                 },
-                                "required": ["title", "content", "category"]
+                                "required": ["title", "content"]
                             }
                         }
                     },
