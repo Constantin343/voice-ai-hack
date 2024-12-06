@@ -67,11 +67,11 @@ export default function Home() {
   }, [agentId, setAgentId]);
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-black text-black dark:text-[#FFFBF0]">
+    <div className="fixed inset-0 lg:pl-64 bg-white dark:bg-black text-black dark:text-[#FFFBF0]">
       <Suspense fallback={null}>
         <SubscriptionStatus />
       </Suspense>
-      <div className="h-full flex flex-col items-center justify-between p-8 pb-20">
+      <div className="h-full flex flex-col items-center justify-between p-8 pb-20 relative">
         <div className="flex-1 flex items-center justify-center w-full">
           <div 
             className="flex items-center justify-center cursor-pointer"
@@ -80,7 +80,9 @@ export default function Home() {
             <AnimatedAgent isSpeaking={isSpeaking} />
           </div>
         </div>
-        <InfoIcon />
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 lg:translate-x-0 lg:left-[calc(50%)]">
+          <InfoIcon />
+        </div>
       </div>
     </div>
   );
