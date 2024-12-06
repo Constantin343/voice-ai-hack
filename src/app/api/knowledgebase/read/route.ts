@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from('entries')
-      .select('id, title, content, category')
+      .select('id, title, content')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -19,7 +19,6 @@ export async function GET() {
       summary: entry.content.length > 100 
         ? `${entry.content.substring(0, 100)}...` 
         : entry.content,
-      category: entry.category
     }));
     
     return NextResponse.json({ entries: transformedData });

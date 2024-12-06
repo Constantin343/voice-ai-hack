@@ -45,6 +45,10 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({ isSpeaking }) => {
     }
   }
 
+  const handleClick = () => {
+    return;
+  }
+
    // Update animation state when isSpeaking changes
    useEffect(() => {
     if (isSpeaking) {
@@ -59,13 +63,8 @@ const AnimatedLogo: React.FC<AnimatedLogoProps> = ({ isSpeaking }) => {
       width="400"
       height="400"
       viewBox="0 0 1200 1200"
-      onClick={() => {
-        if (currentAnimation === 'static') {
-          setCurrentAnimation('animate')
-        } else {
-          setCurrentAnimation('static')
-        }
-      }}
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
     >
       <motion.path
         fill="currentColor"

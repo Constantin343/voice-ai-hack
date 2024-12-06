@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
+import {createClient} from "@/utils/supabase/server";
 
-export default async function request_Anthropic(prompt: string) : Promise<any> {
+export default async function request_Anthropic(prompt: string): Promise<any> {
     const anthropic = new Anthropic({
         apiKey: process.env["ANTHROPIC_API_KEY"]
     });
@@ -8,9 +9,9 @@ export default async function request_Anthropic(prompt: string) : Promise<any> {
     const msg = await anthropic.messages.create({
         model: "claude-3-5-sonnet-20241022",
         max_tokens: 4096,
-        messages: [{ 
-            role: "user", 
-            content: prompt 
+        messages: [{
+            role: "user",
+            content: prompt
         }],
         temperature: 0.7,
         system: "You are a professional copywriter. Always return responses in valid JSON format when asked. Never truncate or shorten the response. Complete all sections fully."
@@ -182,7 +183,7 @@ Build in viral sharing hooks
         Based on the provided thoughts and memory, generate the title and main content for creating a draft`;
 
     try {
-        const msg= await anthropic.messages.create({
+        const msg = await anthropic.messages.create({
             model: "claude-3-5-sonnet-20241022",
             system: systemPrompt,
             tools: [
@@ -216,7 +217,7 @@ Build in viral sharing hooks
             tool_choice: {"type": "tool", "name": "create_draft"},
             max_tokens: 1024,
             temperature: 0.5,
-            messages: [{ role: "user", content: prompt }],
+            messages: [{role: "user", content: prompt}],
         });
         return (msg.content[0] as any).input;
     } catch (error) {
@@ -300,12 +301,288 @@ Focus on extracting factual, reusable information that would be valuable for fut
             tool_choice: {"type": "tool", "name": "extract_knowledge"},
             max_tokens: 1024,
             temperature: 0.5,
-            messages: [{ role: "user", content: prompt }],
+            messages: [{role: "user", content: prompt}],
         });
-        
+
         return (msg.content[0] as any).input.knowledge_points;
     } catch (error) {
         console.error("Error extracting knowledge from transcript:", error);
         throw error;
     }
+}
+
+const PERSONA_CREATION_PROMPT_OUPUT_TOOL: any = {
+    "name": "personal_branding_analysis",
+    "description": "Analyzes and refines personal branding inputs to create a cohesive personal brand strategy",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "introduction": {
+                "type": "string",
+                "description": "A concise introduction describing who you are, what you do, and what you're passionate about.Example:\n" +
+                    "I help people see the world differently. I'm a tech visionary and storyteller who believes in the intersection of technology and liberal arts. My passion lies in creating products that aren't just tools, but extensions of the human experience - products that change how we live, work, and think.\n" +
+                    "\n" +
+                    "I'm not just a tech entrepreneur; I'm someone who stands at the crossroads of counterculture and technology. From calligraphy classes at Reed College to zen meditation in India, my journey has been about seeking perfection in simplicity and bringing that vision to life through technology.\n"
+            },
+            "uniqueness": {
+                "type": "string",
+                "description": "Details about what makes you unique and how you want to be perceived. Example:\n" +
+                    "I want to be known as the person who makes technology human. My uniqueness comes from:\n" +
+                    "\n" +
+                    "- The ability to see what others don't and make the impossible seem inevitable\n" +
+                    "- Merging design, humanities, and technology in ways nobody else does\n" +
+                    "- Uncompromising pursuit of perfection in every detail\n" +
+                    "- Ability to distill complex technologies into magical experiences\n" +
+                    "- Creating reality distortion fields that push people beyond their perceived limits\n"
+            },
+            "audience": {
+                "type": "string",
+                "description": "The target audience you aim to serve with your personal brand, based on your goals and skills. Example:\n" +
+                    "I serve the dreamers, the misfits, the rebels, the troublemakers - the ones who see things differently. Specifically:   \n" +
+                    "- Innovators and entrepreneurs who want to make a dent in the universe\n" +
+                    "- Creative professionals who use technology to bring their visions to life\n" +
+                    "- Technology enthusiasts who believe in the power of design\n" +
+                    "- Business leaders looking to create category-defining products\n" +
+                    "- Anyone who believes that the best way to predict the future is to invent it\n"
+            },
+            "value_proposition": {
+                "type": "string",
+                "description": "The specific value you provide to your audience, detailing the problems you solve and how. Example:\n" +
+                    "I solve the fundamental problem of complexity in technology. Here's how:\n" +
+                    "\n" +
+                    "- I show people what they need before they know they need it\n" +
+                    "- I simplify the complex into something beautiful and intuitive\n" +
+                    "- I help organizations think differently about product development\n" +
+                    "- I demonstrate how to build products that create emotional connections\n" +
+                    "- I inspire people to push beyond the ordinary and achieve the extraordinary\n" +
+                    "\n" +
+                    "For my audience, I translate this into:\n" +
+                    "\n" +
+                    "- Insights about building revolutionary products\n" +
+                    "- Strategies for creating category-defining companies\n" +
+                    "- Frameworks for thinking differently about design and user experience\n" +
+                    "- Leadership principles for driving innovation\n" +
+                    "- Stories that inspire people to pursue their crazy ideas"
+            },
+            "style": {
+                "type": "string",
+                "description": "The tone, visual, and verbal style you aspire to in your content. Example:\n" +
+                    "Content Tone:\n" +
+                    "\n" +
+                    "- Minimalist yet powerful\n" +
+                    "- Bold, contrarian statements\n" +
+                    "- Theatrical buildups with \"one more thing\" moments\n" +
+                    "- Zero tolerance for mediocrity\n" +
+                    "- Short, quotable mantras\n" +
+                    "\n" +
+                    "Verbal Style:\n" +
+                    "\n" +
+                    "- Direct and uncompromising\n" +
+                    "- No corporate speak\n" +
+                    "- Emotional storytelling\n" +
+                    "- Power words: \"revolutionary,\" \"incredible,\" \"magical\"\n" +
+                    "- Dramatic pauses and timing\n" +
+                    "\n" +
+                    "Visual Style:\n" +
+                    "\n" +
+                    "- Black backgrounds\n" +
+                    "- High contrast\n" +
+                    "- Abundant white space\n" +
+                    "- One perfect image > many average ones\n" +
+                    "- Consistent personal appearance (black turtleneck)\n" +
+                    "\n" +
+                    "Core Principles:\n" +
+                    "\n" +
+                    "- Quality over quantity - each post must be perfect\n" +
+                    "- Challenge status quo\n" +
+                    "- Paint impossible futures\n" +
+                    "- Make people think differently\n" +
+                    "- No compromise for engagement\n" +
+                    "- Focus on vision, not tactics\n" +
+                    "\n" +
+                    "Remember: The goal isn't to be likable - it's to be unforgettable. Every piece of content should feel like a keynote moment, even if it's just a LinkedIn post."
+            },
+            "goals": {
+                "type": "string",
+                "description": "Your vision, metrics of success, and long-term aspirations for your personal brand. Example:\n" +
+                    "My goals with my personal brand:\n" +
+                    "\n" +
+                    "Vision:\n" +
+                    "To inspire a new generation of leaders who understand that the intersection of technology and humanities is where the magic happens.\n" +
+                    "\n" +
+                    "Metrics of Success:\n" +
+                    "\n" +
+                    "- Number of people inspired to start companies that merge technology and liberal arts\n" +
+                    "- Adoption of human-centered design principles in technology companies\n" +
+                    "- Impact on how people think about product development\n" +
+                    "- Cultural shift in how technology is perceived and designed\n" +
+                    "\n" +
+                    "Business Model:\n" +
+                    "\n" +
+                    "- Speaking engagements about innovation and design\n" +
+                    "- Advisory roles for companies wanting to create revolutionary products\n" +
+                    "- Building and leading companies that exemplify my philosophy\n" +
+                    "- Investment in ventures that align with my vision of technology and humanities\n" +
+                    "\n" +
+                    "One-Year Goals:\n" +
+                    "\n" +
+                    "- Establish a strong thought leadership presence around human-centered technology\n" +
+                    "- Build a community of innovators who share my vision\n" +
+                    "- Create content that challenges conventional thinking about technology and design\n" +
+                    "- Influence the next generation of product developers and entrepreneurs\n" +
+                    "- Share insights about building products that change the world\n" +
+                    "\n" +
+                    "Remember: I'm not here to win a popularity contest. I'm here to push the human race forward. If some people don't like my methods or message, that's fine. I'm looking for the ones who want to help change the world."
+            }
+        },
+        "required": ["introduction", "uniqueness", "audience", "value_proposition", "style", "goals"]
+    }
+}
+
+export async function extractPersonaFromScrapedLinkedinProfile(scraped_profile: string, scraped_posts: string): Promise<any> {
+    const anthropic = new Anthropic({
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 40000
+    });
+
+    const supabase = await createClient()
+
+    // Get the current user
+    const {
+        data: {user},
+        error: userError,
+    } = await supabase.auth.getUser();
+    if (!scraped_profile || !scraped_posts) {
+        const {data, error} = await supabase
+            .from('user_personas')
+            .select('user_id, scraped_profile, scraped_posts')
+            .filter('user_id', 'eq', user?.id)
+            .single();
+
+        if (error) {
+            console.error('Error fetching scraped linkedin data:', error);
+        } else {
+            scraped_profile = !scraped_profile ? data.scraped_profile : scraped_profile;
+            scraped_posts = !scraped_posts ? data.scraped_posts : scraped_posts;
+            console.log('Linkedin Data:', data);
+        }
+    }
+
+    const systemPrompt = `
+You are an AI tasked with analyzing LinkedIn profiles and posts to extract personal branding elements. 
+Focus on identifying relevant information that aligns with the predefined fields: introduction, uniqueness, audience, value_proposition, style, and goals. 
+Extract only explicitly or implicitly stated information from the profile and posts. Aggregate similar aspects into one input, avoid redundancy, and ensure clarity and conciseness. 
+
+Return the extracted information as a JSON object.
+`;
+
+    const prompt = `
+Please analyze the following LinkedIn profile and posts to extract the required personal branding inputs:
+
+PROFILE:
+'''${scraped_profile ? JSON.stringify(scraped_profile) : 'No profile information'}'''
+
+POSTS:
+'''${scraped_posts ? JSON.stringify(scraped_posts) : 'No post information'}'''
+
+Based on the linkedin profile and posts, extract user persona to call the personal_branding_analysis tool with the following attributes:
+- 'introduction'
+- 'uniqueness'
+- 'audience'
+- 'value_proposition'
+- 'style'
+- 'goals'
+
+Focus on actionable and insightful descriptions of the different attributes of the persona. If no information is provided or the information is not sufficient, come up with reasonable attributes.
+`;
+
+    try {
+        const msg = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            system: systemPrompt,
+            tools: [PERSONA_CREATION_PROMPT_OUPUT_TOOL],
+            tool_choice: {"type": "tool", "name": "personal_branding_analysis"},
+            max_tokens: 1024,
+            temperature: 0.5,
+            messages: [{role: "user", content: prompt}],
+        });
+
+        return (msg.content[0] as any).input;
+    } catch (error) {
+        console.error("Error extracting knowledge from linkedin Scraper:", error);
+        throw error;
+    }
+}
+
+
+export async function refinePersonaFromTranscript(transcript: string): Promise<any> {
+    const anthropic = new Anthropic({
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 40000
+    });
+
+    const supabase = await createClient()
+
+    // Get the current user
+    const {
+        data: {user},
+        error: userError,
+    } = await supabase.auth.getUser();
+    const {data, error} = await supabase
+        .from('user_personas')
+        .select('user_id, introduction, uniqueness, audience, value_proposition, style, goals')
+        .filter('user_id', 'eq', user?.id)
+        .single();
+
+    if (error) {
+        console.error('Error fetching current persona for refinement:', error);
+    } else {
+        console.log('Current persona:', data);
+    }
+
+
+const systemPrompt = `
+You are an AI tasked to refine personal branding elements based on an interview transcript. 
+Only refine if you have information that could improve or correct existing personal branding elements.
+Return the new branding elements as a JSON object.
+`;
+
+const prompt = `
+Please analyze the following conversation transcript to refine the existing personal branding elements:
+
+TRANSCRIPT:
+'''${transcript}'''
+
+EXISTING PERSONA:
+'''${data ? JSON.stringify(data) : 'No existing persona information'}'''
+
+Based on the transcript refine the existing persona to call the personal_branding_analysis tool with the following attributes:
+- 'introduction'
+- 'uniqueness'
+- 'audience'
+- 'value_proposition'
+- 'style'
+- 'goals'
+
+Focus on actionable and insightful descriptions of the different attributes of the persona.
+`;
+
+try {
+    const msg = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        system: systemPrompt,
+        tools: [PERSONA_CREATION_PROMPT_OUPUT_TOOL],
+        tool_choice: {"type": "tool", "name": "personal_branding_analysis"},
+        max_tokens: 1024,
+        temperature: 0.5,
+        messages: [{role: "user", content: prompt}],
+    });
+
+    return (msg.content[0] as any).input;
+} catch (error) {
+    console.error("Error extracting knowledge from linkedin Scraper:", error);
+    throw error;
+}
 }

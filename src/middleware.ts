@@ -6,11 +6,15 @@ export async function middleware(request: NextRequest) {
     const publicPaths = [
         '/',
         '/api/stripe/webhook',
-        '/api/stripe/test'
+        '/api/stripe/test',
+        '/login',
+        '/register',
+        '/auth/callback',
+        '/auth/confirm'
     ]
 
     // Check if the current path is in publicPaths
-    if (publicPaths.some(path => request.nextUrl.pathname === path)) {
+    if (publicPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
         return NextResponse.next()
     }
     
@@ -23,5 +27,3 @@ export const config = {
         '/api/agent/:path*'
     ],
 }
-
-

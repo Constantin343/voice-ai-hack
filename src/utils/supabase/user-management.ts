@@ -21,34 +21,51 @@ export async function handleUserAgentConnection(
         console.error('Error fetching user_agent:', fetchError)
     }
 
-    if (!existingConnection) {
-        console.log("no existing connection, creating new agent")
+    // Create new agent if there's no connection or if agent_id is missing
+    if (!existingConnection || !existingConnection.agent_id) {
+        console.log("Creating new agent - no existing connection or missing agent_id")
         try {
-            // Create new agent without passing supabase
-            const { llm_id } = await createLLM()
+            // Fetch user's full name
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('full_name')
+                .eq('id', userId)
+                .single()
 
+            if (userError) {
+                console.error('Error fetching user data:', userError)
+            }
 
+            // Safely extract first name from full name
+            let firstName = ''
+            if (userData?.full_name) {
+                const nameParts = userData.full_name.trim().split(/\s+/)
+                firstName = nameParts[0] || ''
+            }
+
+            const { llm_id } = await createLLM(firstName)
             const { agent_id } = await createAgent({
                 name: userId,
                 llm_id: llm_id
             })
 
-            // Create connection with new agent_id
-            const { error: insertError } = await supabase
+            // Upsert connection with new agent_id
+            const { error: upsertError } = await supabase
                 .from('user_agent')
-                .insert([
+                .upsert(
                     {
                         user_id: userId,
                         agent_id: agent_id,
                         llm_id: llm_id
-                    }
-                ])
+                    },
+                    { onConflict: 'user_id' }
+                )
             
-            if (insertError) {
-                throw insertError
+            if (upsertError) {
+                throw upsertError
             }
 
-            return { user_id: userId, agent_id: agent_id }
+            return { user_id: userId, agent_id: agent_id, llm_id: llm_id }
         } catch (error) {
             console.error('Error in handleUserAgentConnection:', error)
             throw error

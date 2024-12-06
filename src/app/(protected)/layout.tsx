@@ -2,13 +2,36 @@ import { Sidebar } from "@/components/Sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Toaster } from 'sonner';
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import {useMemo} from "react";
+import {createClient} from "@/utils/supabase/server";
+import OnboardingScreen from "@/components/onboarding/onboarding-screen";
+import {redirect} from "next/navigation";
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
+  const supabase = useMemo(() => {
+    return createClient()
+  }, []);
+  const authUser = useMemo(async () => {
+    const { data: { user } } = await (await supabase).auth.getUser()
+    if (!user) {
+      redirect('/login')
+    }
+    return user
+  }, []);
+  const isUserOnboarded = useMemo(async () => {
+    let { data: user } = await (await supabase)
+        .from('users')
+        .select("is_onboarded")
+        .eq('user_id', (await authUser)?.id)
+        .single();
+    return user && user.is_onboarded;
+  }, []);
+
+  return await isUserOnboarded ? (
     <SidebarProvider>
       <div className="h-full relative">
         <Toaster richColors position="top-center" />
@@ -25,5 +48,7 @@ export default function ProtectedLayout({
         </div>
       </div>
     </SidebarProvider>
+  ) : (
+      <OnboardingScreen />
   );
 }
