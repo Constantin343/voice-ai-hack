@@ -20,7 +20,7 @@ export async function updateLLMWithUserContext(userId: string) {
         const { data: userData, error: userError } = await supabase
             .from('users')
             .select('given_name')
-            .eq('id', userId)
+            .eq('user_id', userId)
             .single();
 
         if (userError) {

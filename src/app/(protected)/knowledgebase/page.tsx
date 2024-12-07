@@ -29,6 +29,7 @@ export default function KnowledgePage() {
     const [selectedEntry, setSelectedEntry] = useState<KnowledgeEntry | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedContent, setEditedContent] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -116,6 +117,7 @@ export default function KnowledgePage() {
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this entry?')) return;
         
+        setIsDeleting(true);
         try {
             console.log('Deleting entry:', id);
             const response = await fetch('/api/knowledgebase/delete', {
@@ -134,7 +136,6 @@ export default function KnowledgePage() {
             }
             
             if (data.success) {
-                // Force a fresh fetch of entries instead of manipulating local state
                 await fetchEntries();
                 setSelectedEntry(null);
             } else {
@@ -143,6 +144,8 @@ export default function KnowledgePage() {
         } catch (error) {
             console.error('Error deleting entry:', error);
             alert('Failed to delete entry. Please try again.');
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -333,8 +336,9 @@ export default function KnowledgePage() {
                                     <Button
                                         variant="destructive"
                                         onClick={() => handleDelete(selectedEntry.id)}
+                                        disabled={isDeleting}
                                     >
-                                        Delete
+                                        {isDeleting ? 'Deleting...' : 'Delete'}
                                     </Button>
                                 </>
                             )}
