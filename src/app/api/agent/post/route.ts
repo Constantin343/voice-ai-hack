@@ -67,6 +67,32 @@ export async function POST(req: NextRequest) {
       console.error('Error in background knowledge base update:', error)
     );
 
+    // Get user persona
+    const { data: persona, error: personaError } = await supabase
+      .from('user_personas')
+      .select('introduction, uniqueness, audience, value_proposition, style, goals')
+      .eq('user_id', user.id)
+      .single();
+
+    if (personaError) {
+      console.error('Error fetching user persona:', personaError);
+      // Continue without persona data
+    }
+
+    // Construct persona string from available fields
+    let personaContext = '';
+    if (persona) {
+      personaContext = [
+        'User Infromation:',
+        persona.introduction,
+        persona.uniqueness,
+        persona.audience,
+        persona.value_proposition,
+        persona.style,
+        persona.goals
+      ].filter(Boolean).join('\n\n');
+    }
+
     console.log('Fetching relevant memories');
     const relevantMemories = await match_entries(supabase, transcript, user.id);
     const memoriesContext = relevantMemories
@@ -76,7 +102,10 @@ export async function POST(req: NextRequest) {
       .join('\n');
     
     console.log('Generating title and content with Anthropic');
-    const { title, content, linkedin, twitter } = await getPostTitleAndContent(transcript, memoriesContext);
+    const { title, content, linkedin, twitter } = await getPostTitleAndContent(
+      transcript, 
+      `${personaContext}\n\n${memoriesContext}`
+    );
     console.log('Generated title:', title);
 
     console.log('Storing content in Supabase');
