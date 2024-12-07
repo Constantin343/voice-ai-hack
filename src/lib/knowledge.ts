@@ -28,16 +28,16 @@ export async function updateLLMWithUserContext(userId: string) {
             return;
         }
 
-        // Get user persona
+        // Get user persona - updated to match actual table structure
         const { data: persona, error: personaError } = await supabase
             .from('user_personas')
-            .select('persona')
+            .select('introduction, uniqueness, audience, value_proposition, style, goals')
             .eq('user_id', userId)
             .single();
 
         if (personaError) {
             console.error('Error fetching user persona:', personaError);
-            return;
+            // Continue without persona data
         }
 
         // Get user's LLM ID
@@ -52,14 +52,28 @@ export async function updateLLMWithUserContext(userId: string) {
             return;
         }
 
+        // Construct persona string from available fields
+        let personaString = '';
+        if (persona) {
+            personaString = [
+                persona.introduction,
+                persona.uniqueness,
+                persona.audience,
+                persona.value_proposition,
+                persona.style,
+                persona.goals
+            ].filter(Boolean).join('\n\n');
+        }
+
         // Update LLM with knowledge points and persona
         await updateLLM({
             llm_id: userAgent.llm_id,
-            prompt_personalization: persona?.persona || ''
+            prompt_personalization: personaString || ''
         }, entries?.map(entry => entry.summary) || []);
 
     } catch (error) {
         console.error('Error updating LLM with user context:', error);
+        // Don't throw the error - allow the deletion to complete
     }
 }
 

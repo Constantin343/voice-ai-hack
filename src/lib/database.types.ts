@@ -71,90 +71,60 @@ export type Database = {
       }
       entries: {
         Row: {
-          category: string
           content: string
           created_at: string | null
           embedding: string
           id: number
+          summary: string | null
           title: string
           user_id: string | null
         }
         Insert: {
-          category: string
           content: string
           created_at?: string | null
           embedding: string
           id?: never
+          summary?: string | null
           title: string
           user_id?: string | null
         }
         Update: {
-          category?: string
           content?: string
           created_at?: string | null
           embedding?: string
           id?: never
+          summary?: string | null
           title?: string
           user_id?: string | null
         }
         Relationships: []
       }
-      personas: {
-        Row: {
-          audience: string | null
-          created_at: string
-          goals: string | null
-          id: string
-          introduction: string | null
-          style: string | null
-          uniqueness: string | null
-          updated_at: string
-          user_id: string
-          value_proposition: string | null
-        }
-        Insert: {
-          audience?: string | null
-          created_at?: string
-          goals?: string | null
-          id?: string
-          introduction?: string | null
-          style?: string | null
-          uniqueness?: string | null
-          updated_at?: string
-          user_id: string
-          value_proposition?: string | null
-        }
-        Update: {
-          audience?: string | null
-          created_at?: string
-          goals?: string | null
-          id?: string
-          introduction?: string | null
-          style?: string | null
-          uniqueness?: string | null
-          updated_at?: string
-          user_id?: string
-          value_proposition?: string | null
-        }
-        Relationships: []
-      }
       user_agent: {
         Row: {
-          agent_id: string
+          agent_id: string | null
           created_at: string | null
+          knowledge_base_id: string | null
           llm_id: string | null
+          onboarding_agent_id: string | null
+          onboarding_llm_id: string | null
           user_id: string
         }
         Insert: {
-          agent_id: string
+          agent_id?: string | null
           created_at?: string | null
+          knowledge_base_id?: string | null
           llm_id?: string | null
+          onboarding_agent_id?: string | null
+          onboarding_llm_id?: string | null
           user_id: string
         }
         Update: {
-          agent_id?: string
+          agent_id?: string | null
           created_at?: string | null
+          knowledge_base_id?: string | null
           llm_id?: string | null
+          onboarding_agent_id?: string | null
+          onboarding_llm_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -180,6 +150,51 @@ export type Database = {
           twitter_access_token?: string | null
           twitter_verification_code?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_personas: {
+        Row: {
+          audience: string | null
+          created_at: string
+          goals: string | null
+          id: string
+          introduction: string | null
+          scraped_posts: Json | null
+          scraped_profile: Json | null
+          style: string | null
+          uniqueness: string | null
+          updated_at: string
+          user_id: string
+          value_proposition: string | null
+        }
+        Insert: {
+          audience?: string | null
+          created_at?: string
+          goals?: string | null
+          id?: string
+          introduction?: string | null
+          scraped_posts?: Json | null
+          scraped_profile?: Json | null
+          style?: string | null
+          uniqueness?: string | null
+          updated_at?: string
+          user_id: string
+          value_proposition?: string | null
+        }
+        Update: {
+          audience?: string | null
+          created_at?: string
+          goals?: string | null
+          id?: string
+          introduction?: string | null
+          scraped_posts?: Json | null
+          scraped_profile?: Json | null
+          style?: string | null
+          uniqueness?: string | null
+          updated_at?: string
+          user_id?: string
+          value_proposition?: string | null
         }
         Relationships: []
       }
@@ -220,32 +235,35 @@ export type Database = {
         Row: {
           agent_id: string | null
           avatar_url: string | null
-          created_at: string
+          created_at: string | null
           email: string | null
           full_name: string | null
-          id: string
+          is_onboarded: boolean | null
           linkedin_id: string | null
-          updated_at: string
+          updated_at: string | null
+          user_id: string
         }
         Insert: {
           agent_id?: string | null
           avatar_url?: string | null
-          created_at?: string
+          created_at?: string | null
           email?: string | null
           full_name?: string | null
-          id: string
+          is_onboarded?: boolean | null
           linkedin_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
+          user_id: string
         }
         Update: {
           agent_id?: string | null
           avatar_url?: string | null
-          created_at?: string
+          created_at?: string | null
           email?: string | null
           full_name?: string | null
-          id?: string
+          is_onboarded?: boolean | null
           linkedin_id?: string | null
-          updated_at?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -260,6 +278,7 @@ export type Database = {
               query_embedding: string
               match_threshold: number
               match_count: number
+              p_user_id: string
             }
             Returns: {
               id: number
@@ -280,7 +299,8 @@ export type Database = {
               id: number
               title: string
               content: string
-              category: string
+              summary: string
+              user_id: string
               similarity: number
             }[]
           }

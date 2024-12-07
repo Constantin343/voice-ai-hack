@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { generateEmbedding } from '@/lib/embeddings';
 import { createClient } from "@/utils/supabase/server";
 import { generateSummary } from '@/lib/anthropic';
+import { updateLLMWithUserContext } from '@/lib/knowledge';
 
-export async function POST(request: Request) {
+export async function PUT(request: Request) {
   const supabase = await createClient()
   
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -15,38 +16,44 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { title, content } = await request.json();
+    const { id, title, content } = await request.json();
     
-    if (!title || !content) {
+    if (!id || !title || !content) {
       return NextResponse.json(
-        { error: 'Title and content are required' },
+        { error: 'ID, title and content are required' },
         { status: 400 }
       );
     }
 
-    // Generate summary using Anthropic
+    // Generate new summary and embedding
     const summary = await generateSummary(title, content);
     const embedding = await generateEmbedding(content);
     
     const { error } = await supabase
       .from('entries')
-      .insert([
-        {
-          title: title as string,
-          content: content as string,
-          summary: summary,
-          embedding: JSON.stringify(embedding),
-          user_id: user.id,
-        },
-      ]);
+      .update({
+        content,
+        summary,
+        embedding: JSON.stringify(embedding),
+      })
+      .eq('id', id)
+      .eq('user_id', user.id); // Ensure user can only update their own entries
 
     if (error) throw error;
+
+    // Update LLM context after successful update
+    try {
+      await updateLLMWithUserContext(user.id);
+    } catch (llmError) {
+      console.error('Error updating LLM context:', llmError);
+      // Continue with update success response
+    }
     
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error adding entry:', error);
+    console.error('Error updating entry:', error);
     return NextResponse.json(
-      { error: 'Failed to add entry' },
+      { error: 'Failed to update entry' },
       { status: 500 }
     );
   }

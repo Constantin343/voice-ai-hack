@@ -586,3 +586,44 @@ try {
     throw error;
 }
 }
+
+export async function generateSummary(title: string, content: string): Promise<string> {
+    const anthropic = new Anthropic({
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 30000
+    });
+
+    const systemPrompt = `
+You are an AI tasked with creating concise, informative summaries.
+Your goal is to create a single-line summary (max 150 characters) that captures the key point or insight.
+The summary should be clear, direct, and immediately useful.
+Do not use bullet points or any special formatting.
+`;
+
+    const prompt = `
+Please create a concise summary of the following content:
+
+Title: ${title}
+Content: ${content}
+
+Return only the summary text, no additional formatting or explanation.`;
+
+    try {
+        const msg = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 200,
+            temperature: 0.7,
+            system: systemPrompt,
+            messages: [{
+                role: "user",
+                content: prompt
+            }],
+        });
+
+        return (msg.content[0] as any).text.trim();
+    } catch (error) {
+        console.error("Error generating summary:", error);
+        throw error;
+    }
+}

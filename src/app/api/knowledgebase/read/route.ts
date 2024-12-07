@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import {createClient} from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server";
 
 export async function GET() {
   const supabase = await createClient()
@@ -7,21 +7,12 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from('entries')
-      .select('id, title, content')
+      .select('id, title, content, summary')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-
-    // Transform the data to include truncated content
-    const transformedData = data.map(entry => ({
-      id: entry.id,
-      title: entry.title,
-      summary: entry.content.length > 100 
-        ? `${entry.content.substring(0, 100)}...` 
-        : entry.content,
-    }));
     
-    return NextResponse.json({ entries: transformedData });
+    return NextResponse.json({ entries: data });
   } catch (error) {
     console.error('Error fetching entries:', error);
     return NextResponse.json(
