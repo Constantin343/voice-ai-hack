@@ -48,7 +48,7 @@ function LoginPageContent() {
 
                 {error === 'not_registered' && (
                     <div className="p-4 text-sm text-red-800 bg-red-100 rounded-lg">
-                        Account not found. Please register first to use our service.
+                        Account not found. Please sign up to the waitlist to receive early access.
                     </div>
                 )}
 
