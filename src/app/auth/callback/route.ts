@@ -49,7 +49,9 @@ export async function GET(request: Request) {
                             {
                                 user_id: user.id,
                                 email: user.email,
-                                full_name: user.user_metadata.full_name,
+                                given_name: user.user_metadata.given_name,
+                                family_name: user.user_metadata.family_name,
+                                full_name: `${user.user_metadata.given_name} ${user.user_metadata.family_name}`,
                                 avatar_url: user.user_metadata.avatar_url,
                                 created_at: new Date().toISOString(),
                                 updated_at: new Date().toISOString(),
@@ -64,6 +66,7 @@ export async function GET(request: Request) {
                         return NextResponse.redirect(`${origin}/login?error=registration_failed`)
                     }
                 }
+
 
                 try {
                     await handleUserAgentConnection(supabase, user.id)

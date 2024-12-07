@@ -12,6 +12,28 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
+        // Get user's given_name from users table
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('given_name')
+            .eq('id', user.id)
+            .single()
+
+        if (userError) {
+            console.error('Error fetching user data:', userError)
+        }
+
+        // Get existing knowledge entries
+        const { data: entries, error: entriesError } = await supabase
+            .from('entries')
+            .select('summary')
+            .eq('user_id', user.id)
+            .not('summary', 'is', null);
+
+        if (entriesError) {
+            console.error('Error fetching knowledge entries:', entriesError);
+        }
+
         const body = await request.json()
         const { introduction, uniqueness, audience, value_proposition, style, goals } = body
 
@@ -49,10 +71,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No LLM found for user' }, { status: 500 })
         }
 
-        // Update the LLM with the new persona information
+        // Update the LLM with all parameters in a single object
         await updateLLM({
             llm_id: agentData.llm_id,
-            prompt_personalization
+            prompt_personalization,
+            userName: userData?.given_name,
+            knowledgeEntries: entries?.map(entry => entry.summary) || []
         })
 
         return NextResponse.json({ success: true })

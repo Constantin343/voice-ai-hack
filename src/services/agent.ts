@@ -84,10 +84,13 @@ interface CreateAgentParams {
 interface UpdateLLMParams {
     llm_id: string;
     prompt_personalization: string;
+    knowledgeEntries?: string[];
+    userName?: string;
 }
 
 interface CreateOnboardingAgentParams {
     user_id: string;
+    user_name?: string;
     prompt_personalization?: string;
 }
 
@@ -118,16 +121,16 @@ export async function createLLM(userName?: string) {
     };
 }
 
-export async function updateLLM(params: UpdateLLMParams, knowledgeEntries?: string[]) {
+export async function updateLLM(params: UpdateLLMParams) {
     console.log("Updating LLM");
 
     // Prepare knowledge entries section if entries exist
-    const knowledgeSection = knowledgeEntries?.length 
-        ? `\n\nKnowledge Points:\n${knowledgeEntries.join('\n')}`
+    const knowledgeSection = params.knowledgeEntries?.length 
+        ? `\n\nKnowledge Points:\n${params.knowledgeEntries.join('\n')}`
         : '';
 
     const llmResponse = await client.llm.update(params.llm_id, {
-        general_prompt: `${DEFAULT_PROMPT}\n\n${params.prompt_personalization}${knowledgeSection}`
+        general_prompt: `${DEFAULT_PROMPT}\n\nUser's first name if available: ${params.userName || ''}\n\n${params.prompt_personalization}${knowledgeSection}`
     });
     console.log("LLM updated:", llmResponse);
     return {
@@ -140,8 +143,8 @@ export async function createOnboardingAgent(params: CreateOnboardingAgentParams)
     
     // Create LLM with combined prompts
     const fullPrompt = params.prompt_personalization 
-        ? `${ONBOARDING_PROMPT}\n\n${params.prompt_personalization}`
-        : ONBOARDING_PROMPT;
+        ? `${ONBOARDING_PROMPT}\n\nUser's first name if available: ${params.user_name || ''}\n\n${params.prompt_personalization}`
+        : `${ONBOARDING_PROMPT}\n\nUser's first name if available: ${params.user_name || ''}`;
         
     console.log("Creating LLM for onboarding");
     const { llm_id } = await client.llm.create({

@@ -16,6 +16,17 @@ export async function updateLLMWithUserContext(userId: string) {
     try {
         const supabase = await createClient();
 
+        // Get user's given_name
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('given_name')
+            .eq('id', userId)
+            .single();
+
+        if (userError) {
+            console.error('Error fetching user data:', userError);
+        }
+
         // Get all knowledge points for this user
         const { data: entries, error: entriesError } = await supabase
             .from('entries')
@@ -65,11 +76,13 @@ export async function updateLLMWithUserContext(userId: string) {
             ].filter(Boolean).join('\n\n');
         }
 
-        // Update LLM with knowledge points and persona
+        // Update LLM with all parameters in a single object
         await updateLLM({
             llm_id: userAgent.llm_id,
-            prompt_personalization: personaString || ''
-        }, entries?.map(entry => entry.summary) || []);
+            prompt_personalization: personaString || '',
+            knowledgeEntries: entries?.map(entry => entry.summary) || [],
+            userName: userData?.given_name
+        });
 
     } catch (error) {
         console.error('Error updating LLM with user context:', error);
