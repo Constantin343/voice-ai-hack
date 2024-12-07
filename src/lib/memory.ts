@@ -6,7 +6,6 @@ type MemoryEntry = {
   id: number;
   title: string;
   content: string;
-  category: string;
   similarity: number;
 };
 

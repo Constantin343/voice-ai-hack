@@ -37,7 +37,7 @@ First, you will be given the thoughts and memory. Then, you will craft a title a
 Create a succinct, engaging, and short title for the post. Keep these tips in mind:
 - Clarity is Key: Avoid vague or overly abstract titles. Ensure the audience immediately understands the topic.
 - Make It Intriguing: Use power words or pose a question that resonates with your audience.
-- Keep It Concise: The title should be no longer than 55 characters, with the most important words appearing early.
+- Keep It Concise: The title should be no longer than 55 characters, with the most important words appearing early. 55 characters is the maximum length for the title!
 - Target Your Audience: Tailor the language and tone of the title to the software development or technical community.
 
 Example titles:
@@ -45,13 +45,14 @@ Example titles:
 - "The Future of AI in Content Creation"
 
 # 2. Writing the Main Content:
-Using the same thoughts and some memory, extract the key points to shape the thoughts. Follow these guidelines:
-- Introduction: Hook the reader with an intriguing opening.
-- Key Arguments or Ideas: Present the main points or arguments concisely and engagingly.
+Using the same thoughts (and some relevant memory, but only if something similar was mentioned in the thoughts!), extract the key points to shape the thoughts. Follow these guidelines:
+- Introduction: Hook the reader with an intriguing opening in which you introduce the main idea in one sentence.
+- Key Arguments or Ideas: Present the main points or arguments concisely and engagingly; use bullet points if needed.
 - Supporting Details: Incorporate the memory to provide examples, anecdotes, or context that enrich the main points.
 - Takeaway or Call to Action: End with a conclusion that encourages further thought or engagement.
 - If the conversation is short, just take all the ideas from the conversation.
-- The content should be engaging, clear, and concise, suitable for a blog post or LinkedIn article.
+- The content should be engaging, clear, and concise -> just like a good brainstorming session summary.
+- Be really concise and only include the most important points. No generic blabla. Straight to the point.
 
 # 3. Write LinkedIn Post:
 Transform the content into a highly engaging LinkedIn post following these specific guidelines:
@@ -259,7 +260,7 @@ Please analyze this conversation transcript and extract key knowledge points:
 
 ${transcript}
 
-Format each knowledge point as a JSON object with 'title', 'content', and 'category' fields.
+Format each knowledge point as a JSON object with 'title', 'content' fields.
 Focus on extracting factual, reusable information that would be valuable for future reference.`;
 
     try {
@@ -284,13 +285,9 @@ Focus on extracting factual, reusable information that would be valuable for fut
                                     "content": {
                                         "type": "string",
                                         "description": "The extracted knowledge content"
-                                    },
-                                    "category": {
-                                        "type": "string",
-                                        "description": "Category of the knowledge point"
                                     }
                                 },
-                                "required": ["title", "content", "category"]
+                                "required": ["title", "content"]
                             }
                         }
                     },

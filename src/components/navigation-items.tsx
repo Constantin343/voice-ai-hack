@@ -21,6 +21,7 @@ export function NavigationItems({ onItemClick }: NavigationItemsProps) {
       try {
         const response = await fetch('/api/db/read');
         const data = await response.json();
+        console.log('Fetched posts:', data);
         
         if (data.content_items) {
           setPosts(data.content_items);
@@ -78,14 +79,16 @@ export function NavigationItems({ onItemClick }: NavigationItemsProps) {
                 href={`/post/${post.id}`}
                 onClick={onItemClick}
                 className={cn(
-                  "flex items-center gap-x-2 text-base px-4 py-3 rounded-lg transition-colors",
+                  "flex items-center gap-x-2 text-base px-4 py-3 rounded-lg transition-colors group",
                   pathname === `/post/${post.id}`
                     ? "bg-primary/10 text-primary" 
                     : "hover:bg-muted"
                 )}
               >
-                <MessageSquare className="h-5 w-5" />
-                {post.title}
+                <div className="flex-shrink-0 w-5 h-5">
+                  <MessageSquare className="w-full h-full" />
+                </div>
+                <span className="flex-1 truncate">{post.title}</span>
               </Link>
             ))}
           </div>

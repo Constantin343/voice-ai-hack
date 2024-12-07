@@ -54,6 +54,7 @@ export default function PostPage() {
     title?: string,
     details?: string
   }>({})
+  const [windowWidth, setWindowWidth] = useState(0);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -300,17 +301,46 @@ export default function PostPage() {
     const adjustTitleHeight = () => {
       const titleTextarea = document.querySelector('textarea[data-type="title"]') as HTMLTextAreaElement;
       if (titleTextarea) {
-        // Reset to single line to check if content fits
+        // Force reflow
         titleTextarea.style.height = '2.4rem';
-        // Only expand if content doesn't fit in one line
-        if (titleTextarea.scrollHeight > titleTextarea.clientHeight) {
-          titleTextarea.style.height = '4.8rem';
-        }
+        const scrollHeight = titleTextarea.scrollHeight;
+        titleTextarea.style.height = `${scrollHeight}px`;
       }
     };
 
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+      adjustTitleHeight();
+    };
+
+    // Set initial width
+    setWindowWidth(window.innerWidth);
+    
+    // Initial adjustment
     adjustTitleHeight();
-  }, [currentPost?.title]);
+
+    // Debounced resize handler
+    let timeoutId: NodeJS.Timeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(handleResize, 100);
+    });
+
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Re-adjust when title or window width changes
+  useEffect(() => {
+    const titleTextarea = document.querySelector('textarea[data-type="title"]') as HTMLTextAreaElement;
+    if (titleTextarea) {
+      titleTextarea.style.height = '2.4rem';
+      const scrollHeight = titleTextarea.scrollHeight;
+      titleTextarea.style.height = `${scrollHeight}px`;
+    }
+  }, [currentPost?.title, windowWidth]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -345,8 +375,11 @@ export default function PostPage() {
                     e.preventDefault();
                   }
                 }}
-                className="text-2xl font-bold w-full resize-none focus:outline-none focus:bg-gray-50 rounded pl-0 overflow-hidden"
-                style={{ height: '2.4rem' }}
+                className="text-2xl font-bold w-full resize-none focus:outline-none focus:bg-gray-50 rounded pl-0"
+                style={{ 
+                  minHeight: '2.4rem',
+                  overflow: 'hidden'
+                }}
                 placeholder="Enter title..."
                 rows={1}
                 maxLength={55}
