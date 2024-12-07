@@ -111,12 +111,12 @@ export default function SettingsPage() {
           <div className="flex items-center gap-3">
             <Mail className="h-5 w-5 text-black" />
             <a 
-              href="mailto:publyc@mail.com" 
+              href="mailto:hello@publyc.app" 
               className="text-sm sm:text-base hover:underline text-black"
               target="_blank"
               rel="noopener noreferrer"
             >
-              publyc@mail.com
+              hello@publyc.app
             </a>
           </div>
           <div className="flex items-center gap-3">

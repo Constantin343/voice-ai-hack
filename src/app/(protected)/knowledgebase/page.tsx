@@ -113,7 +113,6 @@ export default function KnowledgePage() {
                             </div>
                             <div className="space-y-4">
                                 <h1 className="text-3xl font-bold">{userData?.user_metadata?.name || 'User'}</h1>
-                                <p className="text-lg text-blue-200">{userData?.user_metadata?.headline || 'Professional'}</p>
                                 {userData?.user_metadata?.location && (
                                     <p className="text-lg max-w-2xl mx-auto text-gray-200">
                                         {userData?.user_metadata?.description || 'No description available'}
@@ -126,7 +125,7 @@ export default function KnowledgePage() {
                                 className="mt-8 px-8 py-6 text-lg font-semibold bg-white text-black hover:bg-white/90 transition-colors"
                                 size="lg"
                             >
-                                create your publyc persona
+                                update your publyc persona
                             </Button>
                         </div>
                     </div>
