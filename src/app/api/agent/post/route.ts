@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Retell from 'retell-sdk';
 import { getPostTitleAndContent } from '@/lib/anthropic';
 import {createClient} from "@/utils/supabase/server";
-import { match_entries } from '@/lib/memory';
+import { match_entries } from '@/lib/knowledge';
 import { updateKnowledgeBase } from '@/lib/knowledge';
 import { incrementPostCount } from '@/lib/subscription';
 

@@ -43,7 +43,7 @@ Ask a clarifying question if the details are vague.
 3. You should ask maximum 3 questions in total! After gathering all responses, inform the user in one short statement that you'll craft their post using these insights and the information in the knowledge base.
 Call function end_call to hang up.
 
-Below are specific information about the user if available. Address them by name if possible.`; // Your full prompt text here
+Below are specific information about the user if available. Address them by name if possible. Additionally, you can use the knowledge points below that were retrieved from previous conversations or added by the user to ask more specific questions.`;
 
 const ONBOARDING_PROMPT = `## Identity
 You are an AI onboarding specialist. Your role is to understand new users and help personalize their experience. You're friendly, empathetic, and genuinely interested in learning about the user to provide them with the best possible experience.
@@ -118,10 +118,16 @@ export async function createLLM(userName?: string) {
     };
 }
 
-export async function updateLLM(params: UpdateLLMParams) {
+export async function updateLLM(params: UpdateLLMParams, knowledgeEntries?: string[]) {
     console.log("Updating LLM");
+
+    // Prepare knowledge entries section if entries exist
+    const knowledgeSection = knowledgeEntries?.length 
+        ? `\n\nKnowledge Points:\n${knowledgeEntries.join('\n')}`
+        : '';
+
     const llmResponse = await client.llm.update(params.llm_id, {
-        general_prompt: `${DEFAULT_PROMPT}\n\n${params.prompt_personalization}`
+        general_prompt: `${DEFAULT_PROMPT}\n\n${params.prompt_personalization}${knowledgeSection}`
     });
     console.log("LLM updated:", llmResponse);
     return {

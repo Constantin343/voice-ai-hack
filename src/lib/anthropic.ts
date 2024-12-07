@@ -251,7 +251,7 @@ Aggregate similiar aspects into one knowledge point and only create distinct kno
 For each knowledge point you identify:
 1. Create a clear, concise title
 2. Extract or summarize the relevant content concisely
-3. Categorize it appropriately (e.g., 'technical', 'business', 'process', 'client', etc.)
+4. Create a summary of the knowledge point that is a single bullet point and captures the key facts.
 
 Return the information as an array of knowledge items in JSON format.`;
 
@@ -285,9 +285,13 @@ Focus on extracting factual, reusable information that would be valuable for fut
                                     "content": {
                                         "type": "string",
                                         "description": "The extracted knowledge content"
+                                    }, 
+                                    "summary": {
+                                        "type": "string",
+                                        "description": "A summary of the knowledge point"
                                     }
                                 },
-                                "required": ["title", "content"]
+                                "required": ["title", "content", "summary"]
                             }
                         }
                     },
