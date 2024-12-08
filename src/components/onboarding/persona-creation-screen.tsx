@@ -51,9 +51,10 @@ export default function PersonaCreationScreen({ onNext }: { onNext: () => void }
                 
                 {!isSpeaking && (
                     <div className="w-full text-center mb-8">
-                        <p className="text-muted-foreground">
-                            Our AI assistant will ask you a few questions to understand your needs better.
-                            Click the icon below to start the conversation.
+                        <p className="text-base text-foreground">
+                            Your assistant will ask you a few questions to better understand your needs.
+                            <br />
+                            Click the logo below to start the conversation.
                         </p>
                     </div>
                 )}
@@ -68,19 +69,12 @@ export default function PersonaCreationScreen({ onNext }: { onNext: () => void }
                 </div>
 
                 <div className="mt-8 z-10">
-                    {isSpeaking ? (
+                    {isSpeaking && (
                         <button
                             onClick={() => handleIsSpeaking(false)}
                             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                             End Conversation
-                        </button>
-                    ) : (
-                        <button
-                            onClick={onNext}
-                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            Skip for now
                         </button>
                     )}
                 </div>

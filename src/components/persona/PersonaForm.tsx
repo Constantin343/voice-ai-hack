@@ -92,8 +92,9 @@ export default function PersonaForm({
                 <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
                     <h2 className="text-xl font-semibold text-gray-800">You did it!</h2>
                     <p className="text-gray-600 mt-2">
-                        Your persona is now complete and will guide your journey with our platform.
-                        Don't worry, you can always make changes to your persona in the knowledge base area later.
+                        Your persona is now complete and will guide your journey with publyc.
+                        <br />
+                        You can always make changes in the knowledge base later.
                     </p>
                 </div>
             )}
@@ -125,7 +126,7 @@ export default function PersonaForm({
 
                 <PersonaField
                     title="Value Proposition"
-                    subtitle="How do you solve those problems? What exactly is the value you provide?"
+                    subtitle="What problem do you solve for your audience? How do you solve those problems? What exactly is the value you"
                     value={persona.value_proposition}
                     onChange={(value) => onChange('value_proposition', value)}
                     readOnly={readOnly}
