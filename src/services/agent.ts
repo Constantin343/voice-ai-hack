@@ -99,8 +99,9 @@ export async function createAgent(params: CreateAgentParams) {
     const agentResponse = await client.agent.create({
         response_engine: { 
             llm_id: params.llm_id || 'llm_8d17bb56a2ba7c7143bbecddeb5f', 
-            type: 'retell-llm' 
+            type: 'retell-llm',
         },
+        responsiveness: 0.8,  // Added responsiveness parameter
         agent_name: params.name,
         voice_id: '11labs-Adrian',
     });
@@ -159,6 +160,7 @@ export async function createOnboardingAgent(params: CreateOnboardingAgentParams)
             type: 'retell-llm' 
         },
         agent_name: `Onboarding-${params.user_id}`,
+        responsiveness: 0.8,  // Added responsiveness parameter
         voice_id: '11labs-Adrian',
     });
     
