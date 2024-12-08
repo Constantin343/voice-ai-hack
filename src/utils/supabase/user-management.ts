@@ -29,7 +29,7 @@ export async function handleUserAgentConnection(
             const { data: userData, error: userError } = await supabase
                 .from('users')
                 .select('full_name')
-                .eq('id', userId)
+                .eq('user_id', userId)
                 .single()
 
             if (userError) {

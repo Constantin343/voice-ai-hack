@@ -251,7 +251,7 @@ Aggregate similiar aspects into one knowledge point and only create distinct kno
 For each knowledge point you identify:
 1. Create a clear, concise title
 2. Extract or summarize the relevant content concisely
-3. Categorize it appropriately (e.g., 'technical', 'business', 'process', 'client', etc.)
+4. Create a summary of the knowledge point that is a single bullet point and captures the key facts.
 
 Return the information as an array of knowledge items in JSON format.`;
 
@@ -285,9 +285,13 @@ Focus on extracting factual, reusable information that would be valuable for fut
                                     "content": {
                                         "type": "string",
                                         "description": "The extracted knowledge content"
+                                    }, 
+                                    "summary": {
+                                        "type": "string",
+                                        "description": "A summary of the knowledge point"
                                     }
                                 },
-                                "required": ["title", "content"]
+                                "required": ["title", "content", "summary"]
                             }
                         }
                     },
@@ -581,4 +585,45 @@ try {
     console.error("Error extracting knowledge from linkedin Scraper:", error);
     throw error;
 }
+}
+
+export async function generateSummary(title: string, content: string): Promise<string> {
+    const anthropic = new Anthropic({
+        apiKey: process.env["ANTHROPIC_API_KEY"],
+        maxRetries: 2,
+        timeout: 30000
+    });
+
+    const systemPrompt = `
+You are an AI tasked with creating concise, informative summaries.
+Your goal is to create a single-line summary (max 150 characters) that captures the key point or insight.
+The summary should be clear, direct, and immediately useful.
+Do not use bullet points or any special formatting.
+`;
+
+    const prompt = `
+Please create a concise summary of the following content:
+
+Title: ${title}
+Content: ${content}
+
+Return only the summary text, no additional formatting or explanation.`;
+
+    try {
+        const msg = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 200,
+            temperature: 0.7,
+            system: systemPrompt,
+            messages: [{
+                role: "user",
+                content: prompt
+            }],
+        });
+
+        return (msg.content[0] as any).text.trim();
+    } catch (error) {
+        console.error("Error generating summary:", error);
+        throw error;
+    }
 }

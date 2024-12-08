@@ -117,8 +117,10 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
     setHasSeenWarning(true);
   };
 
-  useEffect(() => {
+  // Add a new ref to track call start time
+  const callStartTimeRef = useRef<number | null>(null);
 
+  useEffect(() => {
     const setupRetellCall = async () => {
       try {
         if (!token) {
@@ -168,6 +170,8 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
           audioDevices: devices.audio.length
         });
 
+        // Add call start time tracking
+        callStartTimeRef.current = Date.now();
         await retellClientRef.current.startCall({
           accessToken: token,
           sampleRate: 24000,
@@ -192,6 +196,18 @@ export const AnimatedAgent: React.FC<AnimatedAgentProps> = ({ isSpeaking }) => {
       }
       
       if (callId) {
+        // Check call duration
+        const callDuration = callStartTimeRef.current ? (Date.now() - callStartTimeRef.current) / 1000 : 0;
+        callStartTimeRef.current = null;
+
+        if (callDuration < 20) {
+          toast.error('Recording too short', {
+            description: 'Please speak for at least 10 seconds to generate a post.',
+          });
+          setCallId('');
+          return;
+        }
+
         setIsProcessing(true);
         
         try {

@@ -17,6 +17,17 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
         }
 
+        // Get user's given_name from users table
+        const { data: userData, error: userDataError } = await supabase
+            .from('users')
+            .select('given_name')
+            .eq('user_id', user.id)
+            .single();
+
+        if (userDataError) {
+            console.error('Error fetching user data:', userDataError);
+        }
+
         // Fetch the persona from the Supabase database
         const { data: personaData, error: personaError } = await supabase
             .from('user_personas')
@@ -35,6 +46,7 @@ export async function POST(req: NextRequest) {
         // Use the persona data to create the onboarding agent
         await createOnboardingAgent({
             user_id: user.id,
+            user_name: userData?.given_name || '',
             prompt_personalization: JSON.stringify(personaData),
         });
 

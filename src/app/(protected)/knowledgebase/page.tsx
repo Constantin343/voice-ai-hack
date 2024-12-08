@@ -4,16 +4,18 @@ import React, {useState, useEffect} from 'react'
 import {createClient} from "@/utils/supabase/client"
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table"
-import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from "@/components/ui/dialog"
+import {Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription} from "@/components/ui/dialog"
 import {Input} from "@/components/ui/input"
 import {Label} from "@/components/ui/label"
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"
 import {Button} from "@/components/ui/button"
 import {Textarea} from "@/components/ui/textarea"
+import { Pencil, Trash2 } from 'lucide-react'
 
 interface KnowledgeEntry {
     id: number;
     title: string;
+    content: string;
     summary: string;
 }
 
@@ -24,6 +26,10 @@ export default function KnowledgePage() {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [selectedEntry, setSelectedEntry] = useState<KnowledgeEntry | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedContent, setEditedContent] = useState('');
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         const fetchUser = async () => {
@@ -83,6 +89,65 @@ export default function KnowledgePage() {
             setIsSubmitting(false)
         }
     }
+
+    const handleUpdate = async (entry: KnowledgeEntry) => {
+        try {
+            const response = await fetch('/api/knowledgebase/update', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: entry.id,
+                    title: entry.title,
+                    content: editedContent,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Failed to update entry');
+            
+            await fetchEntries();
+            setIsEditing(false);
+            setSelectedEntry(null);
+        } catch (error) {
+            console.error('Error updating entry:', error);
+        }
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this entry?')) return;
+        
+        setIsDeleting(true);
+        try {
+            console.log('Deleting entry:', id);
+            const response = await fetch('/api/knowledgebase/delete', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id }),
+            });
+
+            const data = await response.json();
+            console.log('Delete response:', data);
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to delete entry');
+            }
+            
+            if (data.success) {
+                await fetchEntries();
+                setSelectedEntry(null);
+            } else {
+                throw new Error(data.error || 'Failed to delete entry');
+            }
+        } catch (error) {
+            console.error('Error deleting entry:', error);
+            alert('Failed to delete entry. Please try again.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     return (
         <div className="min-h-screen p-8 space-y-8">
@@ -187,25 +252,21 @@ export default function KnowledgePage() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center">
-                                        Loading...
-                                    </TableCell>
+                                    <TableCell colSpan={2} className="text-center">Loading...</TableCell>
                                 </TableRow>
                             ) : error ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center text-red-500">
-                                        {error}
-                                    </TableCell>
+                                    <TableCell colSpan={2} className="text-center text-red-500">{error}</TableCell>
                                 </TableRow>
                             ) : knowledgeEntries.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center">
-                                        No entries found
-                                    </TableCell>
+                                    <TableCell colSpan={2} className="text-center">No entries found</TableCell>
                                 </TableRow>
                             ) : (
                                 knowledgeEntries.map((entry) => (
-                                    <TableRow key={entry.id}>
+                                    <TableRow key={entry.id} 
+                                            className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            onClick={() => setSelectedEntry(entry)}>
                                         <TableCell className="text-black dark:text-[#FFFBF0] font-medium">
                                             {entry.title}
                                         </TableCell>
@@ -219,6 +280,72 @@ export default function KnowledgePage() {
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Update the View/Edit Entry Dialog */}
+            {selectedEntry && (
+                <Dialog open={!!selectedEntry} onOpenChange={() => {
+                    setSelectedEntry(null);
+                    setIsEditing(false);
+                    setEditedContent('');
+                }}>
+                    <DialogContent className="sm:max-w-[600px]">
+                        <DialogHeader>
+                            <DialogTitle>{selectedEntry.title}</DialogTitle>
+                        </DialogHeader>
+                        <div className="mt-4">
+                            <Label>Content</Label>
+                            {isEditing ? (
+                                <Textarea
+                                    value={editedContent}
+                                    onChange={(e) => setEditedContent(e.target.value)}
+                                    className="mt-2 min-h-[150px]"
+                                />
+                            ) : (
+                                <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-md">
+                                    {selectedEntry.content}
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Footer buttons */}
+                        <div className="mt-6 flex justify-end gap-2">
+                            {isEditing ? (
+                                <Button
+                                    variant="default"
+                                    onClick={() => {
+                                        handleUpdate({
+                                            ...selectedEntry,
+                                            content: editedContent
+                                        });
+                                    }}
+                                    className="bg-black text-white hover:bg-black/90"
+                                >
+                                    Save Changes
+                                </Button>
+                            ) : (
+                                <>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEditedContent(selectedEntry.content);
+                                            setIsEditing(true);
+                                        }}
+                                    >
+                                        Edit
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => handleDelete(selectedEntry.id)}
+                                        disabled={isDeleting}
+                                    >
+                                        {isDeleting ? 'Deleting...' : 'Delete'}
+                                    </Button>
+                                </>
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     )
 }

@@ -28,6 +28,18 @@ export async function POST(req: NextRequest) {
         if (!user) {
             return NextResponse.json({error: 'User not authenticated'}, {status: 401});
         }
+
+        // Get user's given_name from users table
+        const { data: userData, error: userDataError } = await supabase
+            .from('users')
+            .select('given_name')
+            .eq('user_id', user.id)
+            .single();
+
+        if (userDataError) {
+            console.error('Error fetching user data:', userDataError);
+        }
+
         console.log('Start time: ', new Date().toISOString());
         const postData = await extractPostData(linkedinProfile);
         if (!postData) {
@@ -65,10 +77,10 @@ export async function POST(req: NextRequest) {
 
         await createOnboardingAgent({
             user_id: user.id,
+            user_name: userData?.given_name || '',
             prompt_personalization: persona ? JSON.stringify(persona) : "",
         })
         console.log('End time: ', new Date().toISOString());
-
 
         return NextResponse.json({message: 'Profile data saved successfully'}, {status: 200});
     } catch (error: any) {

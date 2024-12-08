@@ -42,7 +42,7 @@ Ask a clarifying question if the details are vague.
 3. You should ask maximum 3 questions in total! After gathering all responses, inform the user in one short statement that you'll craft their post using these insights and the information in the knowledge base.
 Call function end_call to hang up.
 
-Below are specific information about the user if available. Address them by name if possible.`; // Your full prompt text here
+Below are specific information about the user if available. Address them by name if possible. Additionally, you can use the knowledge points below that were retrieved from previous conversations or added by the user to ask more specific questions.`;
 
 const ONBOARDING_PROMPT = `## Identity
 You are an AI onboarding specialist. Your role is to understand new users and help personalize their experience. You're friendly, empathetic, and genuinely interested in learning about the user to provide them with the best possible experience.
@@ -83,10 +83,13 @@ interface CreateAgentParams {
 interface UpdateLLMParams {
     llm_id: string;
     prompt_personalization: string;
+    knowledgeEntries?: string[];
+    userName?: string;
 }
 
 interface CreateOnboardingAgentParams {
     user_id: string;
+    user_name?: string;
     prompt_personalization?: string;
 }
 
@@ -95,8 +98,9 @@ export async function createAgent(params: CreateAgentParams) {
     const agentResponse = await client.agent.create({
         response_engine: { 
             llm_id: params.llm_id || 'llm_8d17bb56a2ba7c7143bbecddeb5f', 
-            type: 'retell-llm' 
+            type: 'retell-llm',
         },
+        responsiveness: 0.8,  // Added responsiveness parameter
         agent_name: params.name,
         voice_id: '11labs-Adrian',
     });
@@ -119,8 +123,14 @@ export async function createLLM(userName?: string) {
 
 export async function updateLLM(params: UpdateLLMParams) {
     console.log("Updating LLM");
+
+    // Prepare knowledge entries section if entries exist
+    const knowledgeSection = params.knowledgeEntries?.length 
+        ? `\n\nKnowledge Points:\n${params.knowledgeEntries.join('\n')}`
+        : '';
+
     const llmResponse = await client.llm.update(params.llm_id, {
-        general_prompt: `${DEFAULT_PROMPT}\n\n${params.prompt_personalization}`
+        general_prompt: `${DEFAULT_PROMPT}\n\nUser's first name if available: ${params.userName || ''}\n\n${params.prompt_personalization}${knowledgeSection}`
     });
     console.log("LLM updated:", llmResponse);
     return {
@@ -133,8 +143,8 @@ export async function createOnboardingAgent(params: CreateOnboardingAgentParams)
     
     // Create LLM with combined prompts
     const fullPrompt = params.prompt_personalization 
-        ? `${ONBOARDING_PROMPT}\n\n${params.prompt_personalization}`
-        : ONBOARDING_PROMPT;
+        ? `${ONBOARDING_PROMPT}\n\nUser's first name if available: ${params.user_name || ''}\n\n${params.prompt_personalization}`
+        : `${ONBOARDING_PROMPT}\n\nUser's first name if available: ${params.user_name || ''}`;
         
     console.log("Creating LLM for onboarding");
     const { llm_id } = await client.llm.create({
@@ -149,6 +159,7 @@ export async function createOnboardingAgent(params: CreateOnboardingAgentParams)
             type: 'retell-llm' 
         },
         agent_name: `Onboarding-${params.user_id}`,
+        responsiveness: 0.8,  // Added responsiveness parameter
         voice_id: '11labs-Adrian',
     });
     
