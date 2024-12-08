@@ -5,6 +5,7 @@ import {createClient} from "@/utils/supabase/server";
 import { match_entries } from '@/lib/memory';
 import { updateKnowledgeBase } from '@/lib/knowledge';
 import { incrementPostCount } from '@/lib/subscription';
+import { pushTranscriptToCoval } from '@/lib/coval';
 
 export const maxDuration = 30;
 
@@ -61,6 +62,11 @@ export async function POST(req: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Push transcript to Coval in the background
+    pushTranscriptToCoval(transcript, callResponse.agent_id).catch(error => 
+      console.error('Error pushing transcript to Coval:', error)
+    );
 
     // Update this line to pass the user.id
     updateKnowledgeBase(transcript, user.id).catch(error => 

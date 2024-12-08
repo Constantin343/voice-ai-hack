@@ -62,7 +62,9 @@ If the selected text was:
 
 Your response should look exactly like that, with actual bullet points and line breaks.
 
-YOUR RESPONSE SHOULD PRESERVE THE EXACT FORMATTING OF THE ORIGINAL TEXT.`;
+YOUR RESPONSE SHOULD PRESERVE THE EXACT FORMATTING OF THE ORIGINAL TEXT.
+If the platform is X, make sure that the improved post does not exceed 280 characters in total! -> consider this when writing the response.
+`;
 
         console.log('Sending prompt to Anthropic...');
         const response = await request_Anthropic(prompt);

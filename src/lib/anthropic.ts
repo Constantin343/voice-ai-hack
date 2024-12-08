@@ -103,7 +103,7 @@ Complex arguments that require too much context
 # 4. Write Twitter Post: 
 Transform the content into a high-impact Twitter post following these guidelines:
 
-Twitter posts are limited to 280 characters!!
+Twitter posts are limited to 280 characters!! DO NOT EXCEED THIS LIMIT!
 
 STRUCTURE:
 Start with an attention-grabbing hook
